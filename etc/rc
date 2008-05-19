@@ -1,0 +1,14 @@
+## vim:ft=screen
+autodetach on
+defflow off
+defutf8 on
+nethack on
+shell zsh
+startup_message off
+vbell off
+bell_msg "^GBell in window %n"
+
+backtick 42 0 0 /home/derf/packages/screen/bin/screen.pl
+caption always "%{yb} %=%-Lw [%n%f %t] %+Lw "
+hardstatus alwayslastline "%{dr}%H %{dy} load %l %{dg} %d.%m.%Y %0c %{= dc} %=%42`"
+
