@@ -1,6 +1,7 @@
 ## vim:ft=screen
 autodetach on
 defflow off
+defmode 0600
 defutf8 on
 nethack on
 shell zsh
