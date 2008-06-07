@@ -58,13 +58,19 @@ sub print_thermal {
 }
 
 sub print_ibm_thermal {
-	my @cputemp;
+	my @thermal;
+	my $i;
 	open(THERMAL, '</proc/acpi/ibm/thermal');
-	@cputemp = split(/\ +/, <THERMAL>);
+	@thermal = split(/\ +/, <THERMAL>);
 	close(THERMAL);
-	for (my $i=0; $i<4; $i++) {
-		print "$cputemp[$i] ";
+	for ($i=0; exists($thermal[$i]); $i++) {
+		$thermal[$i] = '-' if $thermal[$i] == '-128';
 	}
+	print "cpu:$thermal[0] ";
+	print "?:$thermal[1] ";
+	print "board:$thermal[2] ";
+	print "gpu:$thermal[3] ";
+	print "bat:$thermal[4] $thermal[6] ";
 }
 
 sub print_acpi {
