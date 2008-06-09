@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 my $hostname;
+local $|=1;
 
 open(HOSTNAME, "</etc/hostname");
 chomp($hostname = <HOSTNAME>);
