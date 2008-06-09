@@ -79,13 +79,15 @@ sub print_acpi {
 }
 
 sub print_np {
-	if (-f '/tmp/np') {
-		open(NP, '</tmp/np');
-		print <NP>;
-		close(NP);
-	} else {
+	# For some reason, the screen hardstatus lags when rcmpc is running
+	# and /tmp/np exists. So, for now, let's waste our ports and not use it...
+#	if (-f '/tmp/np') {
+#		open(NP, '</tmp/np');
+#		print <NP>;
+#		close(NP);
+#	} else {
 		print qx{/home/derf/bin/np | tr -d "\n"};
-	}
+#	}
 }
 
 while (sleep(10)) {
