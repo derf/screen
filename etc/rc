@@ -9,7 +9,7 @@ startup_message off
 vbell off
 bell_msg "^GBell in window %n"
 
-backtick 42 0 0 /home/derf/packages/screen/bin/screen.pl
+backtick 42 0 0 /home/derf/packages/screen/include/screen.pl
 caption always "%{= dy} %=%-Lw [%n%f %t] %+Lw "
 hardstatus alwayslastline "%{dr}%H %{dy} load %l %{dg} %D %d.%m.%Y %0c %{= dc} %=%42`"
 sorendition "= bd"
