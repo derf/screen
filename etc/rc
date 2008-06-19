@@ -9,6 +9,14 @@ startup_message off
 vbell off
 bell_msg "^GBell in window %n"
 
+bind ^X
+bind x remove
+bind X lockscreen
+bind ^S
+bind s split
+bind ^Q
+bind q
+
 backtick 42 0 0 /home/derf/packages/screen/include/screen.pl
 caption splitonly "%{= dy} %=%-Lw [%n%f %t] %+Lw "
 hardstatus alwayslastline "%{dr}%H %{dy} load %l %{dg} %D %d.%m.%Y %0c %{= dc} %=%42`"
