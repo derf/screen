@@ -5,6 +5,7 @@ defmode 0600
 defutf8 on
 nethack on
 shell zsh
+shelltitle '> |zsh'
 startup_message off
 vbell off
 bell_msg "^GBell in window %n"
