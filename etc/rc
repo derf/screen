@@ -3,6 +3,7 @@ autodetach on
 defflow off
 defmode 0600
 defutf8 on
+msgwait 2
 nethack on
 shell zsh
 shelltitle '> |zsh'
