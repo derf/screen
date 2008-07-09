@@ -1,0 +1,8 @@
+screen -t IRC irssi
+screen -t syslog sudo xtail /var/log/auth.log /var/log/daemon.log /var/log/derfbot.log /var/log/dmesg /var/log/faillog /var/log/gidentd.log /var/log/kern.log /var/log/tspc.log /var/log/user.log /var/log/exim4/mainlog /var/log/exim4/rejectlog /var/log/lighttpd/access.log /var/log/lighttpd/error.log
+screen -t Jabber mcabber
+split
+focus down
+select 1
+focus up
+select 0

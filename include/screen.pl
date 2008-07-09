@@ -98,6 +98,10 @@ while (sleep(10)) {
 		print_fan;
 		print '  ';
 		print_thermal;
+	} elsif ($hostname eq 'aneurysm') {
+		print_ip;
+		print '  ';
+		print_mail;
 	} elsif ($hostname eq 'nemesis') {
 		print_ibm_thermal;
 		print '  ';
