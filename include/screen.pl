@@ -37,7 +37,7 @@ sub print_fan {
 	close(FAN);
 }
 
-sub print_thermal {
+sub kraftwerk_print_thermal {
 	my ($acpitemp, @cputemp);
 	if (-f '/proc/acpi/thermal_zone/THRM/temperature') {
 		open(THRM, '</proc/acpi/thermal_zone/THRM/temperature');
@@ -56,6 +56,30 @@ sub print_thermal {
 	} else {
 		print $cputemp[2];
 	}
+}
+
+sub aneurysm_print_thermal {
+	my @sensors;
+	my $current;
+	my $regex = '^[^\:]+\:\s+\+?(\d+).+$';
+	my ($fan, $chip, $cpu, $sys);
+
+	@sensors = split(/\n/, qx{sensors -A});
+	foreach(@sensors) {
+		/$regex/;
+		$current = lc((split(/\:/))[0]);
+		if ($current eq 'fan2') {
+			$fan = $1;
+		} elsif ($current eq 'chip temp') {
+			$chip = $1;
+		} elsif ($current eq 'cpu temp') {
+			$cpu = $1;
+		} elsif ($current eq 'sys temp') {
+			$sys = $1;
+		}
+	}
+
+	print "fan:$fan chip:$chip cpu:$cpu sys:$sys";
 }
 
 sub print_ibm_thermal {
@@ -97,11 +121,13 @@ while (sleep(10)) {
 		print '  ';
 		print_fan;
 		print '  ';
-		print_thermal;
+		kraftwerk_print_thermal;
 	} elsif ($hostname eq 'aneurysm') {
 		print_ip;
 		print '  ';
 		print_mail;
+		print '  ';
+		aneurysm_print_thermal;
 	} elsif ($hostname eq 'nemesis') {
 		print_ibm_thermal;
 		print '  ';
