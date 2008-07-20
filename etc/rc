@@ -1,7 +1,10 @@
 ## vim:ft=screen
 autodetach on
+bell_msg "^GBell in window %n"
 defflow off
+deflogin on
 defmode 0600
+defscrollback 1024
 defutf8 on
 msgwait 2
 nethack on
@@ -9,7 +12,6 @@ shell zsh
 shelltitle '> |zsh'
 startup_message off
 vbell off
-bell_msg "^GBell in window %n"
 
 bind ^X
 bind x remove
