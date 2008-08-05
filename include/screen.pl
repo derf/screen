@@ -115,12 +115,6 @@ sub print_np {
 
 while (sleep(10)) {
 	if ($hostname eq 'kraftwerk') {
-		print_ip;
-		print '  ';
-		print_mail;
-		print '  ';
-		print_fan;
-		print '  ';
 		kraftwerk_print_thermal;
 	} elsif ($hostname eq 'aneurysm') {
 		print_ip;
