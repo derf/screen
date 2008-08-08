@@ -37,6 +37,17 @@ sub print_fan {
 	close(FAN);
 }
 
+sub print_ibm_fan {
+	my $speed;
+	local $/;
+	open(FAN, '</proc/acpi/ibm/fan') or die('wtf, can\'t open file');
+	$speed = (split(/\n/, <FAN>))[1];
+	close(FAN);
+	$speed =~ s/[^\d]//g;
+	print "fan:$speed";
+}
+
+
 sub kraftwerk_print_thermal {
 	my ($acpitemp, @cputemp);
 	if (-f '/proc/acpi/thermal_zone/THRM/temperature') {
@@ -123,6 +134,8 @@ while (sleep(10)) {
 		print '  ';
 		aneurysm_print_thermal;
 	} elsif ($hostname eq 'nemesis') {
+		print_ibm_fan;
+		print '  ';
 		print_ibm_thermal;
 		print '  ';
 		print_acpi;
