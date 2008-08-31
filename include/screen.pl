@@ -49,24 +49,12 @@ sub print_ibm_fan {
 
 
 sub kraftwerk_print_thermal {
-	my ($acpitemp, @cputemp);
-	if (-f '/proc/acpi/thermal_zone/THRM/temperature') {
-		open(THRM, '</proc/acpi/thermal_zone/THRM/temperature');
-		chomp($acpitemp = <THRM>);
-		close(THRM);
-		$acpitemp =~ s/[^\d]//g;
-	}
+	my @cputemp;
 	@cputemp = split(/\n/, qx{sensors -A});
-	$cputemp[1]=~s/[^0-9]//g;
-	$cputemp[2]=~s/[^0-9]//g;
-	$cputemp[1]=~s/........$//;
-	$cputemp[2]=~s/.......$//;
-	print "board $cputemp[1] proc ";
-	if (defined($acpitemp)) {
-		print "$acpitemp ($cputemp[2])";
-	} else {
-		print $cputemp[2];
-	}
+	$cputemp[1]=~s/^[^\.]*(\d{2}\.\d).*$/$1/g;
+	$cputemp[4]=~s/^[^\d]*(\d{2}\.\d).*$/$1/g;
+	$cputemp[5]=~s/^[^\d]*(\d{2}\.\d).*$/$1/g;
+	print "board $cputemp[4] proc $cputemp[1] ($cputemp[5])";
 }
 
 sub aneurysm_print_thermal {
