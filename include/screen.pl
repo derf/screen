@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
+use feature 'switch';
 use strict;
+use utf8;
 use warnings;
 my $hostname;
 local $|=1;
@@ -99,7 +101,17 @@ sub print_ibm_thermal {
 }
 
 sub print_acpi {
-	print qx{acpi | tr -d "\n"};
+	my $acpi = qx{acpi};
+	chomp($acpi);
+	if ($acpi =~ /Battery (\d): (\w+), (\d+)%, (\S+) remaining/) {
+		print "bat$1: ";
+		given($2) {
+			# sadly, it seems the screen developers don't like unicode...
+			when('Discharging') {print 'v'}
+			when('Charging')    {print '^'}
+		}
+		print "$3%, $4 remaining";
+	}
 }
 
 sub print_np {
