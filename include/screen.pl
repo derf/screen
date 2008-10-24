@@ -111,6 +111,8 @@ sub print_acpi {
 			when('Charging')    {print '^'}
 		}
 		print "$3%, $4 remaining";
+	} else {
+		print 'bat0: not present';
 	}
 }
 
