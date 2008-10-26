@@ -11,14 +11,14 @@ chomp($hostname = <HOSTNAME>);
 close(HOSTNAME);
 
 sub print_ip {
-	open(IP, "</tmp/ip");
+	open(IP, "</tmp/ip") or return;
 	print <IP>;
 	close(IP);
 }
 
 sub print_mail {
 	my $new_mail;
-	opendir(MAIL, '/home/derf/Maildir/new');
+	opendir(MAIL, '/home/derf/Maildir/new') or return;
 	$new_mail = scalar(@{[readdir(MAIL)]});
 	closedir(MAIL);
 	$new_mail -= 2;
@@ -30,7 +30,7 @@ sub print_mail {
 }
 
 sub print_fan {
-	open(FAN, '</proc/acpi/fan/FAN/state');
+	open(FAN, '</proc/acpi/fan/FAN/state') or return;
 	if (<FAN> =~ /on/) {
 		print 'fan';
 	} else {
@@ -42,7 +42,7 @@ sub print_fan {
 sub print_ibm_fan {
 	my $speed;
 	local $/;
-	open(FAN, '</proc/acpi/ibm/fan') or die('wtf, can\'t open file');
+	open(FAN, '</proc/acpi/ibm/fan') or return;
 	$speed = (split(/\n/, <FAN>))[1];
 	close(FAN);
 	$speed =~ s/[^\d]//g;
@@ -86,7 +86,7 @@ sub aneurysm_print_thermal {
 sub print_ibm_thermal {
 	my @thermal;
 	my $i;
-	open(THERMAL, '</proc/acpi/ibm/thermal');
+	open(THERMAL, '</proc/acpi/ibm/thermal') or return;
 	@thermal = split(/\ +/, <THERMAL>);
 	close(THERMAL);
 	$thermal[0] =~ s/.+\t//;
@@ -118,7 +118,7 @@ sub print_acpi {
 
 sub print_np {
 	if (-f '/tmp/np') {
-		open(NP, '</tmp/np');
+		open(NP, '</tmp/np') or return;
 		print <NP>;
 		close(NP);
 	} else {
