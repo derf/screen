@@ -9,4 +9,4 @@ focus up
 select 0
 
 # Press F11 to organize everything after attaching
-bindkey -k F1 eval split 'focus down' 'select 1' 'focus up' 'select 0'
+bindkey -k F1 eval split 'focus down' 'select 1' 'focus up' 'select 0' 'readbuf /home/derf/packages/screen/include/irssi-attach' 'paste .'
