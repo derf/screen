@@ -5,10 +5,10 @@ defflow off
 deflogin on
 defmode 0600
 defscrollback 1024
+defshell zsh
 defutf8 on
 msgwait 2
 nethack on
-shell zsh
 shelltitle '> |zsh'
 startup_message off
 vbell off
