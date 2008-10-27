@@ -1,3 +1,5 @@
+## vim:ft=screen
+
 screen -t IRC irssi
 screen -t Jabber mcabber
 split
@@ -5,3 +7,6 @@ focus down
 select 1
 focus up
 select 0
+
+# Press F11 to organize everything after attaching
+bindkey -k F1 eval split 'focus down' 'select 1' 'focus up' 'select 0'
