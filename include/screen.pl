@@ -126,7 +126,35 @@ sub print_np {
 	}
 }
 
-while (sleep(10)) {
+sub print_meminfo {
+	my ($mem, $memfree);
+	my ($swap, $swapfree);
+	return unless (-f '/proc/meminfo');
+	open(MEMINFO, '<', '/proc/meminfo');
+	while(<MEMINFO>) {
+		chomp;
+		/^([^:]+): *(\d+) kB$/;
+		given($1) {
+			when('MemTotal') {$mem = $2}
+			when('MemFree')  {$memfree = $2}
+			when('Buffers')  {$memfree += $2}
+			when('Cached')   {$memfree += $2}
+			when('SwapTotal'){$swap = $2}
+			when('SwapFree') {$swapfree = $2}
+		}
+	}
+	close(MEMINFO);
+	foreach (\$mem, \$memfree, \$swap, \$swapfree) {
+		$$_ /= 1024;
+		$$_ = int($$_);
+	}
+	printf('mem:%d ', $mem-$memfree);
+	printf('swap:%d', $swap-$swapfree);
+}
+
+while (sleep(12)) {
+	print_meminfo;
+	print '  ';
 	if ($hostname eq 'kraftwerk') {
 		kraftwerk_print_thermal;
 	} elsif ($hostname eq 'aneurysm') {
