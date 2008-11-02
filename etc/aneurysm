@@ -2,11 +2,11 @@
 
 screen -t IRC irssi
 screen -t Jabber mcabber
+select 0
 split
 focus down
 select 1
 focus up
-select 0
 
 # Press F11 to organize everything after attaching
 bindkey -k F1 eval split 'focus down' 'select 1' 'readbuf /home/derf/packages/screen/include/mcabber-attach' 'paste .' 'focus up' 'select 0' 'readbuf /home/derf/packages/screen/include/irssi-attach' 'paste .'
