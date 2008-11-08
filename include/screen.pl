@@ -103,8 +103,8 @@ sub print_ibm_thermal {
 sub print_acpi {
 	my $acpi = qx{acpi};
 	chomp($acpi);
+	print 'bat: ';
 	if ($acpi =~ /Battery (\d): (\w+), (\d+)%, (\S+)/) {
-		print "bat$1: ";
 		given($2) {
 			# sadly, it seems the screen developers don't like unicode...
 			when('Discharging') {print 'v'}
@@ -112,7 +112,7 @@ sub print_acpi {
 		}
 		print "$3%, $4 remaining";
 	} else {
-		print 'bat0: not present';
+		print 'not present';
 	}
 }
 
