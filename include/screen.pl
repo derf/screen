@@ -18,7 +18,7 @@ sub print_ip {
 
 sub print_mail {
 	my $new_mail;
-	opendir(MAIL, '/home/derf/Maildir/new') or return;
+	opendir(MAIL, "$ENV{HOME}/Maildir/new") or return;
 	$new_mail = scalar(@{[readdir(MAIL)]});
 	closedir(MAIL);
 	$new_mail -= 2;
@@ -100,7 +100,7 @@ sub print_ibm_thermal {
 	print "bat:$thermal[4] $thermal[6] ";
 }
 
-sub print_acpi {
+sub print_battery {
 	my $acpi = qx{acpi};
 	chomp($acpi);
 	print 'bat: ';
@@ -152,27 +152,41 @@ sub print_meminfo {
 	printf('swap:%d', $swap-$swapfree);
 }
 
+sub space {
+	print '  ';
+}
+
 while (sleep(12)) {
 	print_meminfo;
-	print '  ';
+	if (-d "$ENV{HOME}/Maildir/new") {
+		space;
+		print_mail;
+	}
+	if (-d '/proc/acpi/ibm') {
+		space;
+		print_ibm_fan;
+		space;
+		print_ibm_thermal;
+	}
+
 	if ($hostname eq 'kraftwerk') {
+		space;
 		kraftwerk_print_thermal;
 	} elsif ($hostname eq 'aneurysm') {
-		print_ip;
-		print '  ';
-		print_mail;
-		print '  ';
+		space;
 		aneurysm_print_thermal;
 	} elsif ($hostname eq 'nemesis') {
-		print_ibm_fan;
-		print '  ';
-		print_ibm_thermal;
-		print '  ';
-		print_acpi;
-	} elsif ($hostname eq 'saviour') {
-		print_np;
-	} else {
-		last;
+		space;
+		print_battery;
+	}
+
+	if (-r '/tmp/ip') {
+		space;
+		print_ip;
+	}
+	if (-r '/tmp/np') {
+		space;
+		print_np
 	}
 	print "\n";
 }
