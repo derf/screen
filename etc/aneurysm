@@ -9,4 +9,4 @@ select 1
 focus up
 
 # Press F11 to organize everything after attaching
-bindkey -k F1 eval split 'focus down' 'select 1' 'readbuf /home/derf/packages/screen/include/mcabber-attach' 'paste .' 'focus up' 'select 0' 'readbuf /home/derf/packages/screen/include/irssi-attach' 'paste .'
+bindkey -k F1 source /home/derf/packages/screen/include/aneu
