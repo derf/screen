@@ -107,10 +107,10 @@ sub print_battery {
 	if ($acpi =~ /Battery (\d): (\w+), (\d+)%, (\S+)/) {
 		given($2) {
 			# sadly, it seems the screen developers don't like unicode...
-			when('Discharging') {print 'v'}
-			when('Charging')    {print '^'}
+			when('Discharging') {print "v$3%, $4 remaining"}
+			when('Charging')    {print "^$3%, $4 remaining"}
+			when('Full')        {print "=$3%"}
 		}
-		print "$3%, $4 remaining";
 	} else {
 		print 'not present';
 	}
