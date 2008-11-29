@@ -168,6 +168,10 @@ while (sleep(12)) {
 		space;
 		print_ibm_thermal;
 	}
+	if (-d '/proc/acpi/battery/BAT0') {
+		space;
+		print_battery;
+	}
 
 	if ($hostname eq 'kraftwerk') {
 		space;
@@ -175,9 +179,6 @@ while (sleep(12)) {
 	} elsif ($hostname eq 'aneurysm') {
 		space;
 		aneurysm_print_thermal;
-	} elsif ($hostname eq 'nemesis') {
-		space;
-		print_battery;
 	}
 
 	if (-r '/tmp/ip') {
