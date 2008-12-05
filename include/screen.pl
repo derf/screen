@@ -104,7 +104,7 @@ sub print_battery {
 	my $acpi = qx{acpi};
 	chomp($acpi);
 	print 'bat: ';
-	if ($acpi =~ /Battery (\d): (\w+), (\d+)%, (\S+)/) {
+	if ($acpi =~ /Battery (\d): (\w+), (\d+)%(?:, (\S+))?/) {
 		given($2) {
 			# sadly, it seems the screen developers don't like unicode...
 			when('Discharging') {print "v$3%, $4 remaining"}
@@ -156,7 +156,7 @@ sub space {
 	print '  ';
 }
 
-while (sleep(12)) {
+do {
 	print_meminfo;
 	if (-d "$ENV{HOME}/Maildir/new") {
 		space;
@@ -190,4 +190,4 @@ while (sleep(12)) {
 		print_np
 	}
 	print "\n";
-}
+} while (sleep(12))
