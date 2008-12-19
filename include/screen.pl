@@ -129,8 +129,7 @@ sub print_np {
 sub print_meminfo {
 	my ($mem, $memfree);
 	my ($swap, $swapfree);
-	return unless (-f '/proc/meminfo');
-	open(MEMINFO, '<', '/proc/meminfo');
+	open(MEMINFO, '<', '/proc/meminfo') or return;
 	while(<MEMINFO>) {
 		chomp;
 		/^([^:]+): *(\d+) kB$/;
