@@ -167,7 +167,7 @@ do {
 		space;
 		print_ibm_thermal;
 	}
-	if (-d '/proc/acpi/battery/BAT0') {
+	if (-d '/proc/acpi/battery/BAT0' or -d '/proc/acpi/battery/BAT1') {
 		space;
 		print_battery;
 	}
