@@ -151,6 +151,14 @@ sub print_meminfo {
 	printf('swap:%d', $swap-$swapfree);
 }
 
+sub print_hddtemp {
+	my $disk = shift;
+	my $hddtemp = '/usr/sbin/hddtemp';
+	return unless (-u $hddtemp);
+	chomp(my $temp = qx{$hddtemp -n /dev/$disk});
+	print "$disk:$temp";
+}
+
 sub space {
 	print '  ';
 }
@@ -166,6 +174,10 @@ do {
 		print_ibm_fan;
 		space;
 		print_ibm_thermal;
+	}
+	if ($hostname eq 'nemesis') {
+		space;
+		print_hddtemp('hda');
 	}
 	if (-d '/proc/acpi/battery/BAT0' or -d '/proc/acpi/battery/BAT1') {
 		space;
@@ -186,7 +198,7 @@ do {
 	}
 	if (-r '/tmp/np') {
 		space;
-		print_np
+		print_np;
 	}
 	print "\n";
 } while (sleep(12))
