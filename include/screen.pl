@@ -165,10 +165,6 @@ sub space {
 
 do {
 	print_meminfo;
-	if (-d "$ENV{HOME}/Maildir/new") {
-		space;
-		print_mail;
-	}
 	if (-d '/proc/acpi/ibm') {
 		space;
 		print_ibm_fan;
@@ -192,6 +188,10 @@ do {
 		aneurysm_print_thermal;
 	}
 
+	if (-d "$ENV{HOME}/Maildir/new") {
+		space;
+		print_mail;
+	}
 	if (-r '/tmp/ip') {
 		space;
 		print_ip;
