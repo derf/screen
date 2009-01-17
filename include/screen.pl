@@ -110,6 +110,7 @@ sub print_battery {
 			when('Discharging') {print "v$3%, $4 remaining"}
 			when('Charging')    {print "^$3%, $4 remaining"}
 			when('Full')        {print "=$3%"}
+			default             {print $acpi}
 		}
 	} else {
 		print 'not present';
