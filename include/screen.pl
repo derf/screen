@@ -4,11 +4,22 @@ use strict;
 use utf8;
 use warnings;
 my $hostname;
+my $battery = 0;
 local $|=1;
 
 open(HOSTNAME, "</etc/hostname");
 chomp($hostname = <HOSTNAME>);
 close(HOSTNAME);
+
+if (-d '/proc/acpi/battery') {
+	opendir(ACPI, '/proc/acpi/battery');
+	foreach(readdir(ACPI)) {
+		if (/^BAT\d+$/) {
+			$battery = 1;
+			last;
+		}
+	}
+}
 
 sub print_ip {
 	open(IP, "</tmp/ip") or return;
@@ -176,7 +187,7 @@ do {
 		space;
 		print_hddtemp('hda');
 	}
-	if (-d '/proc/acpi/battery/BAT0' or -d '/proc/acpi/battery/BAT1') {
+	if ($battery) {
 		space;
 		print_battery;
 	}
