@@ -5,6 +5,7 @@ use utf8;
 use warnings;
 my $hostname;
 my $battery = 0;
+my @disks;
 local $|=1;
 
 open(HOSTNAME, "</etc/hostname");
@@ -175,6 +176,19 @@ sub space {
 	print '  ';
 }
 
+if (-u '/usr/sbin/hddtemp' and opendir(DISKS, '/sys/block')) {
+	foreach(readdir(DISKS)) {
+		next unless /^[hs]d[a-z]$/;
+		open(CAP, '<', "/sys/block/$_/capability") or next;
+		chomp(my $cap = <CAP>);
+		close(CAP);
+		if ($cap == 10 or $cap == 12) {
+			push(@disks, $_);
+		}
+	}
+	closedir(DISKS);
+}
+
 do {
 	print_meminfo;
 	if (-d '/proc/acpi/ibm') {
@@ -183,21 +197,24 @@ do {
 		space;
 		print_ibm_thermal;
 	}
-	if ($hostname eq 'nemesis') {
-		space;
-		print_hddtemp('hda');
-	}
-	if ($battery) {
-		space;
-		print_battery;
-	}
-
 	if ($hostname eq 'kraftwerk') {
 		space;
 		kraftwerk_print_thermal;
 	} elsif ($hostname eq 'aneurysm') {
 		space;
 		aneurysm_print_thermal;
+	}
+
+	if ($hostname ne 'saviour') {
+		foreach(@disks) {
+			space;
+			print_hddtemp($_);
+		}
+	}
+
+	if ($battery) {
+		space;
+		print_battery;
 	}
 
 	if (-d "$ENV{HOME}/Maildir/new") {
