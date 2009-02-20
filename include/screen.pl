@@ -125,7 +125,7 @@ sub print_battery {
 			default             {print $acpi}
 		}
 	} else {
-		print 'not present';
+		print '-';
 	}
 }
 
