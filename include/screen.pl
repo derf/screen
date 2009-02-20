@@ -169,6 +169,9 @@ sub print_hddtemp {
 	my $hddtemp = '/usr/sbin/hddtemp';
 	return unless (-u $hddtemp);
 	chomp(my $temp = qx{$hddtemp -n /dev/$disk});
+	unless(length($temp)) {
+		$temp = '-';
+	}
 	print "$disk:$temp";
 }
 
