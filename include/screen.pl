@@ -16,7 +16,7 @@ if (-d '/proc/acpi/battery') {
 	opendir(ACPI, '/proc/acpi/battery');
 	foreach(readdir(ACPI)) {
 		if (/^BAT\d+$/) {
-			$battery = 1;
+			$battery++;
 			last;
 		}
 	}
