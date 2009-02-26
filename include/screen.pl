@@ -109,7 +109,7 @@ sub print_ibm_thermal {
 	print "?:$thermal[1] ";
 	print "board:$thermal[2] ";
 	print "gpu:$thermal[3] ";
-	print "bat:$thermal[4] $thermal[6] ";
+	print "bat:$thermal[4]:$thermal[6] ";
 }
 
 sub print_battery {
