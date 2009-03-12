@@ -1,4 +1,7 @@
 #!/usr/bin/env perl
+## Copyright © 2008, 2009 by Daniel Friesel <derf@derf.homelinux.org>
+## License: WTFPL <http://sam.zoy.org/wtfpl>
+## used in the screen hardstatus
 use feature 'switch';
 use strict;
 use utf8;
