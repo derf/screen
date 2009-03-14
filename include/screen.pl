@@ -193,7 +193,7 @@ if (-u '/usr/sbin/hddtemp' and opendir(DISKS, '/sys/block')) {
 		open(CAP, '<', "/sys/block/$_/capability") or next;
 		chomp(my $cap = <CAP>);
 		close(CAP);
-		if ($cap == 10 or $cap == 12) {
+		if ($cap == 10 or $cap == 12 or $cap == 50) {
 			push(@disks, $_);
 		}
 	}
