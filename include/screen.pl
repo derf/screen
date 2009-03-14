@@ -9,6 +9,7 @@ use warnings;
 my $hostname;
 my $battery = 0;
 my @disks;
+my $interval = 12;
 local $|=1;
 
 open(HOSTNAME, "</etc/hostname");
@@ -236,4 +237,4 @@ do {
 		print_np;
 	}
 	print "\n";
-} while (sleep(12))
+} while (sleep($interval))
