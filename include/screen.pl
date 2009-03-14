@@ -9,7 +9,11 @@ use warnings;
 my $hostname;
 my $battery = 0;
 my @disks;
-my $interval = 12;
+my %interval = (
+	current => 10,
+	ac      => 10,
+	battery => 20,
+);
 local $|=1;
 
 open(HOSTNAME, "</etc/hostname");
@@ -123,9 +127,9 @@ sub print_battery {
 	if ($acpi =~ /Battery (\d): (\w+), (\d+)%(?:, (\S+))?/) {
 		given($2) {
 			# sadly, it seems the screen developers don't like unicode...
-			when('Discharging') {print "v$3%, $4 remaining"}
-			when('Charging')    {print "^$3%, $4 remaining"}
-			when('Full')        {print "=$3%"}
+			when('Discharging') {print "v$3%, $4 remaining"; $interval{current} = $interval{battery}}
+			when('Charging')    {print "^$3%, $4 remaining"; $interval{current} = $interval{ac}}
+			when('Full')        {print "=$3%"; $interval{current} = $interval{ac}}
 			default             {print $acpi}
 		}
 	} else {
@@ -237,4 +241,4 @@ do {
 		print_np;
 	}
 	print "\n";
-} while (sleep($interval))
+} while (sleep($interval{current}))
