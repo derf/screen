@@ -7,7 +7,7 @@ use strict;
 use utf8;
 use warnings;
 my $hostname;
-my $battery = 0;
+my @battery;
 my @disks;
 my %interval = (
 	current => 10,
@@ -23,8 +23,8 @@ close(HOSTNAME);
 if (-d '/proc/acpi/battery') {
 	opendir(ACPI, '/proc/acpi/battery');
 	foreach(readdir(ACPI)) {
-		if (/^BAT\d+$/) {
-			$battery++;
+		if (/^(BAT\d+)$/) {
+			push(@battery, $1);
 			last;
 		}
 	}
@@ -121,19 +121,69 @@ sub print_ibm_thermal {
 }
 
 sub print_battery {
-	my $acpi = qx{acpi};
-	chomp($acpi);
-	print 'bat: ';
-	if ($acpi =~ /Battery (\d): (\w+), (\d+)%(?:, (\S+))?/) {
-		given($2) {
-			# sadly, it seems the screen developers don't like unicode...
-			when('Discharging') {print "v$3%, $4 remaining"; $interval{current} = $interval{battery}}
-			when('Charging')    {print "^$3%, $4 remaining"; $interval{current} = $interval{ac}}
-			when('Full')        {print "=$3%"; $interval{current} = $interval{ac}}
-			default             {print $acpi}
+	my $bat = shift;
+	my %info;
+	my ($line, $key, $value);
+	my ($capacity, $health);
+	open(my $bat_state, '<', "/proc/acpi/battery/$bat/state") or return;
+	open(my $bat_info, '<', "/proc/acpi/battery/$bat/info") or return;
+	while(defined($line = <$bat_state>) or defined($line = <$bat_info>)) {
+		chomp($line);
+		if ($line =~ /^(?<key>.+):\s+(?<value>.*)/) {
+			$key = $+{key};
+			$value = $+{value};
+			$key =~ y/ /_/;
+			if ($key =~ /_(rate|capacity)$/) {
+				$value = (split(/ /, $value))[0];
+			}
+			$info{$key} = $value;
 		}
-	} else {
+	}
+	close($bat_state);
+	close($bat_info);
+	print(lc($bat), ': ');
+	if ($info{present} eq 'no') {
 		print '-';
+		next;
+	}
+	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
+#	$health = $info{last_full_capacity} * 100 / $info{design_capacity};
+
+	if ($info{charging_state} eq 'discharging') {
+		$interval{current} = $interval{battery};
+	} else {
+		$interval{current} = $interval{ac};
+	}
+
+	given($info{charging_state}) {
+		when('discharging') {
+			printf(
+				'v%.f%%, %02d:%02.fh remaining',
+				$capacity,
+				$info{remaining_capacity} / $info{present_rate},
+				($info{remaining_capacity} * 60 / $info{present_rate}) % 60,
+			);
+		}
+		when('charging') {
+			printf(
+				'^%.f%%, %02d:%02.fh remaining',
+				$capacity,
+				($info{last_full_capacity} - $info{remaining_capacity}) / $info{present_rate},
+				(($info{last_full_capacity} - $info{remaining_capacity}) * 60 / $info{present_rate}) % 60,
+			);
+		}
+		when('charged') {
+			printf(
+				'=%.f%%',
+				$capacity,
+			);
+		}
+		default {
+			printf(
+				'?%.f%%',
+				$capacity,
+			);
+		}
 	}
 }
 
@@ -184,7 +234,7 @@ sub print_hddtemp {
 }
 
 sub space {
-	print '  ';
+	print '   ';
 }
 
 if (-u '/usr/sbin/hddtemp' and opendir(DISKS, '/sys/block')) {
@@ -223,9 +273,9 @@ do {
 		}
 	}
 
-	if ($battery) {
+	foreach (@battery) {
 		space;
-		print_battery;
+		print_battery($_);
 	}
 
 	if (-d "$ENV{HOME}/Maildir/new") {
