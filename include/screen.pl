@@ -141,11 +141,11 @@ sub print_battery {
 	}
 	close($bat_state);
 	close($bat_info);
-	print(lc($bat), ': ');
+	print(lc($bat));
 	if ($info{present} eq 'no') {
-		print '-';
 		return;
 	}
+	print ': ';
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 #	$health = $info{last_full_capacity} * 100 / $info{design_capacity};
 
