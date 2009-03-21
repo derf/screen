@@ -174,8 +174,9 @@ sub print_battery {
 		}
 		when('charged') {
 			printf(
-				'=%.f%%',
+				'=%.f%%, %.f%% health',
 				$capacity,
+				$health,
 			);
 		}
 		default {
