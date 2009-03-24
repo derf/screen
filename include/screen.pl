@@ -147,7 +147,7 @@ sub print_battery {
 	}
 	print ': ';
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
-#	$health = $info{last_full_capacity} * 100 / $info{design_capacity};
+	$health = $info{last_full_capacity} * 100 / $info{design_capacity};
 
 	if ($info{charging_state} eq 'discharging') {
 		$interval{current} = $interval{battery};
