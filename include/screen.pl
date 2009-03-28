@@ -145,6 +145,14 @@ sub print_battery {
 	if ($info{present} eq 'no') {
 		return;
 	}
+
+	# prevent division by zero
+	foreach (\@info{'last_full_capacity', 'design_capacity', 'present_rate'}) {
+		unless ($$_) {
+			$$_ = -1;
+		}
+	}
+
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health = $info{last_full_capacity} * 100 / $info{design_capacity};
 
