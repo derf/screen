@@ -107,11 +107,11 @@ sub print_ibm_thermal {
 	my @thermal;
 	my $i;
 	open(THERMAL, '</proc/acpi/ibm/thermal') or return;
-	@thermal = split(/\ +/, <THERMAL>);
+	@thermal = split(/\s+/, <THERMAL>);
 	close(THERMAL);
-	$thermal[0] =~ s/.+\t//;
+	shift(@thermal);
 	for ($i=0; exists($thermal[$i]); $i++) {
-		$thermal[$i] = '-' if $thermal[$i] == '-128';
+		$thermal[$i] = '-' if ($thermal[$i] == -128);
 	}
 	print "cpu:$thermal[0] ";
 	print "?:$thermal[1] ";
