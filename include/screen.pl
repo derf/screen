@@ -252,6 +252,31 @@ sub print_hddtemp {
 	print "$disk:$temp";
 }
 
+#sub print_interfaces {
+#	my (@devices, @virtual);
+#	my $ifpre = '/sys/class/net';
+#	my $virtual = '/sys/devices/virtual/net';
+#	my $device;
+#	opendir(my $ifdir, $ifpre) or return;
+#	@devices = grep { ! /^\./ } readdir($ifdir);
+#	closedir($ifdir);
+#	opendir(my $vdir, $virtual) or return;
+#	@virtual = grep { ! /^\./ } readdir($vdir);
+#	closedir($vdir);
+#	device: foreach $device (@devices) {
+#		foreach (@virtual) {
+#			if ($device eq $_) {
+#				next device;
+#			}
+#		}
+#		open(my $ifstate, '<', "$ifpre/$device/link_mode") or next;
+#		if (<$ifstate> eq "1\n") {
+#			print "$device";
+#		}
+#		close($ifstate);
+#	}
+#}
+
 sub space {
 	print '   ';
 }
@@ -293,6 +318,11 @@ do {
 			print_hddtemp($_);
 		}
 	}
+
+#	if ($config->{interfaces}) {
+#		space;
+#		print_interfaces;
+#	}
 
 	foreach (@battery) {
 		space;
