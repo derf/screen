@@ -9,6 +9,8 @@ use warnings;
 my $hostname;
 my @battery;
 my @disks;
+my $config;
+my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my %interval = (
 	current => 10,
 	ac      => 10,
@@ -19,6 +21,15 @@ local $|=1;
 open(HOSTNAME, "</etc/hostname");
 chomp($hostname = <HOSTNAME>);
 close(HOSTNAME);
+
+if (-r "$confdir/$hostname") {
+	unless ($config = do("$confdir/$hostname")) {
+		warn "couldn't parse config: $@" if $@;
+		warn "couldn't do config: $!"    unless defined $config;
+		warn "couldn't run config"       unless $config;
+	}
+}
+
 
 if (-d '/proc/acpi/battery') {
 	opendir(ACPI, '/proc/acpi/battery');
@@ -259,7 +270,9 @@ if (-u '/usr/sbin/hddtemp' and opendir(DISKS, '/sys/block')) {
 }
 
 do {
-	print_meminfo;
+	if ($config->{meminfo}) {
+		print_meminfo;
+	}
 	if (-d '/proc/acpi/ibm') {
 		space;
 		print_ibm_fan;
@@ -274,7 +287,7 @@ do {
 		aneurysm_print_thermal;
 	}
 
-	if ($hostname ne 'saviour') {
+	if ($config->{hddtemp}) {
 		foreach(@disks) {
 			space;
 			print_hddtemp($_);
