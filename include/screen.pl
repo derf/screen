@@ -253,22 +253,13 @@ sub print_hddtemp {
 }
 
 sub print_interfaces {
-	my (@devices, @virtual);
+	my @devices;
 	my $ifpre = '/sys/class/net';
-	my $virtual = '/sys/devices/virtual/net';
 	my $device;
 	opendir(my $ifdir, $ifpre) or return;
 	@devices = grep { ! /^\./ } readdir($ifdir);
 	closedir($ifdir);
-#	opendir(my $vdir, $virtual) or return;
-#	@virtual = grep { ! /^\./ } readdir($vdir);
-#	closedir($vdir);
 	device: foreach $device (@devices) {
-#		foreach (@virtual) {
-#			if ($device eq $_) {
-#				next device;
-#			}
-#		}
 		open(my $ifstate, '<', "$ifpre/$device/operstate") or next;
 		if (<$ifstate> eq "up\n") {
 			print "$device";
