@@ -72,11 +72,10 @@ sub print_fan {
 
 sub print_ibm_fan {
 	my $speed;
-	local $/;
-	open(FAN, '</proc/acpi/ibm/fan') or return;
-	$speed = (split(/\n/, <FAN>))[1];
+	open(FAN, '<', '/sys/devices/platform/thinkpad_hwmon/fan1_input') or return;
+	$speed = <FAN>;
 	close(FAN);
-	$speed =~ s/[^\d]//g;
+	chomp($speed);
 	print "fan:$speed";
 }
 
