@@ -286,7 +286,7 @@ do {
 	if ($config->{meminfo}) {
 		print_meminfo;
 	}
-	if (-d '/proc/acpi/ibm') {
+	if (-d '/sys/devices/platform/thinkpad_hwmon') {
 		space;
 		print_ibm_fan;
 		space;
