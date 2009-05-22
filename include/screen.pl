@@ -125,18 +125,17 @@ sub aneurysm_print_thermal {
 sub print_ibm_thermal {
 	my @thermal;
 	my $i;
-	open(THERMAL, '</proc/acpi/ibm/thermal') or return;
-	@thermal = split(/\s+/, <THERMAL>);
-	close(THERMAL);
-	shift(@thermal);
-	for ($i=0; exists($thermal[$i]); $i++) {
-		$thermal[$i] = '-' if ($thermal[$i] == -128);
-	}
-	print "cpu:$thermal[0] ";
-	print "?:$thermal[1] ";
-	print "board:$thermal[2] ";
-	print "gpu:$thermal[3] ";
-	print "bat:$thermal[4]:$thermal[6] ";
+	my $prefix = '/sys/devices/platform/thinkpad_hwmon';
+	return unless (-d $prefix);
+	printf(
+		'cpu:%d ?:%d board:%d gpu:%d bat:%d:%d ',
+		fromfile("$prefix/temp1_input")/1000,
+		fromfile("$prefix/temp2_input")/1000,
+		fromfile("$prefix/temp3_input")/1000,
+		fromfile("$prefix/temp4_input")/1000,
+		fromfile("$prefix/temp5_input")/1000,
+		fromfile("$prefix/temp7_input")/1000,
+	);
 }
 
 sub print_battery {
