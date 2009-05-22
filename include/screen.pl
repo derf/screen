@@ -31,14 +31,23 @@ if (-r "$confdir/$hostname") {
 }
 
 
-if (-d '/proc/acpi/battery') {
-	opendir(ACPI, '/proc/acpi/battery');
-	foreach(readdir(ACPI)) {
+if (-d '/sys/class/power_supply') {
+	opendir(POWER, '/sys/class/power_supply');
+	foreach(readdir(POWER)) {
 		if (/^(BAT\d+)$/) {
 			push(@battery, $1);
 			last;
 		}
 	}
+}
+
+sub fromfile {
+	my $file = shift;
+	open(my $fh, '<', $file) or die("Cannot open $file: $!");
+	my $content = <$fh>;
+	close($fh);
+	chomp($content);
+	return($content);
 }
 
 sub print_ip {
@@ -133,26 +142,16 @@ sub print_ibm_thermal {
 sub print_battery {
 	my $bat = shift;
 	my %info;
-	my ($line, $key, $value);
 	my ($capacity, $health);
-	open(my $bat_state, '<', "/proc/acpi/battery/$bat/state") or return;
-	open(my $bat_info, '<', "/proc/acpi/battery/$bat/info") or return;
-	while(defined($line = <$bat_state>) or defined($line = <$bat_info>)) {
-		chomp($line);
-		if ($line =~ /^(?<key>.+):\s+(?<value>.*)/) {
-			$key = $+{key};
-			$value = $+{value};
-			$key =~ y/ /_/;
-			if ($key =~ /_(rate|capacity)$/) {
-				$value = (split(/ /, $value))[0];
-			}
-			$info{$key} = $value;
-		}
-	}
-	close($bat_state);
-	close($bat_info);
+	my $prefix = "/sys/class/power_supply/$bat";
+	$info{remaining_capacity} = fromfile("$prefix/energy_now")/1000;
+	$info{last_full_capacity} = fromfile("$prefix/energy_full")/1000;
+	$info{design_capacity} = fromfile("$prefix/energy_full_design")/1000;
+	$info{charging_state} = lc(fromfile("$prefix/status"));
+	$info{present_rate} = fromfile("$prefix/current_now")/1000;
+	$info{present} = fromfile("$prefix/present");
 	print(lc($bat));
-	if ($info{present} eq 'no') {
+	if ($info{present} == 0) {
 		return;
 	}
 
