@@ -64,8 +64,13 @@ sub print_mail {
 	$new_mail -= 2;
 	if ($new_mail) {
 		print "\@$new_mail";
-	} else {
-		print '  ';
+	}
+}
+
+sub print_jabber {
+	my $unread = fromfile("/tmp/.jabber-unread-$>");
+	if ($unread > 0) {
+		print "J$unread";
 	}
 }
 
@@ -320,6 +325,9 @@ do {
 	if (-d "$ENV{HOME}/Maildir/new") {
 		space;
 		print_mail;
+	}
+	if (-r "/tmp/.jabber-unread-$>") {
+		print_jabber;
 	}
 	if (-r '/tmp/ip') {
 		space;
