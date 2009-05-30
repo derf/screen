@@ -192,7 +192,7 @@ sub print_battery {
 				(($info{last_full_capacity} - $info{remaining_capacity}) * 60 / $info{present_rate}) % 60,
 			);
 		}
-		when(['charged', 'unknown']) {
+		when('full') {
 			printf(
 				' = %.f%%, %.f%% health',
 				$capacity,
