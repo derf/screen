@@ -30,13 +30,15 @@ if (-r "$confdir/$hostname") {
 	}
 }
 
-
-if (-d '/sys/class/power_supply') {
-	opendir(POWER, '/sys/class/power_supply');
-	foreach(readdir(POWER)) {
-		if (/^(BAT\d+)$/) {
-			push(@battery, $1);
-			last;
+sub update_battery {
+	@battery = ();
+	if (-d '/sys/class/power_supply') {
+		opendir(POWER, '/sys/class/power_supply');
+		foreach(readdir(POWER)) {
+			if (/^(BAT\d+)$/) {
+				push(@battery, $1);
+				last;
+			}
 		}
 	}
 }
@@ -288,6 +290,7 @@ if (-u '/usr/sbin/hddtemp' and opendir(DISKS, '/sys/block')) {
 }
 
 do {
+	update_battery;
 	if ($config->{meminfo}) {
 		print_meminfo;
 	}
