@@ -95,6 +95,14 @@ sub print_ibm_fan {
 	print "fan:$speed";
 }
 
+sub print_eee_fan {
+	my $speed;
+	open(my $fan, '<', '/sys/devices/virtual/hwmon/hwmon1/fan1_input') or return;
+	$speed = <$fan>;
+	close($fan);
+	chomp($speed);
+	print "fan:$speed";
+}
 
 sub kraftwerk_print_thermal {
 	my @cputemp;
@@ -142,6 +150,15 @@ sub print_ibm_thermal {
 		fromfile("$prefix/temp4_input")/1000,
 		fromfile("$prefix/temp5_input")/1000,
 		fromfile("$prefix/temp7_input")/1000,
+	);
+}
+
+sub print_eee_thermal {
+	my $prefix = '/sys/devices/virtual/hwmon/hwmon0';
+	return unless (-d $prefix);
+	printf(
+		'cpu:%d',
+		fromfile("$prefix/temp1_input")/1000,
 	);
 }
 
@@ -299,6 +316,12 @@ do {
 		print_ibm_fan;
 		space;
 		print_ibm_thermal;
+	}
+	if (-d '/sys/devices/virtual/hwmon/hwmon0') {
+		space;
+		print_eee_fan;
+		space;
+		print_eee_thermal;
 	}
 	if ($hostname eq 'kraftwerk') {
 		space;
