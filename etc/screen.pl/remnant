@@ -1,0 +1,6 @@
+## vim:ft=perl
+{
+hddtemp => 1,
+interfaces => 1,
+meminfo => 1,
+}

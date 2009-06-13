@@ -150,9 +150,9 @@ sub print_battery {
 	my %info;
 	my ($capacity, $health);
 	my $prefix = "/sys/class/power_supply/$bat";
-	$info{remaining_capacity} = fromfile("$prefix/energy_now")/1000;
-	$info{last_full_capacity} = fromfile("$prefix/energy_full")/1000;
-	$info{design_capacity} = fromfile("$prefix/energy_full_design")/1000;
+	$info{remaining_capacity} = fromfile("$prefix/charge_now")/1000;
+	$info{last_full_capacity} = fromfile("$prefix/charge_full")/1000;
+	$info{design_capacity} = fromfile("$prefix/charge_full_design")/1000;
 	$info{charging_state} = lc(fromfile("$prefix/status"));
 	$info{present_rate} = fromfile("$prefix/current_now")/1000;
 	$info{present} = fromfile("$prefix/present");
@@ -282,7 +282,7 @@ if (-u '/usr/sbin/hddtemp' and opendir(DISKS, '/sys/block')) {
 		open(CAP, '<', "/sys/block/$_/capability") or next;
 		chomp(my $cap = <CAP>);
 		close(CAP);
-		if ($cap == 10 or $cap == 12 or $cap == 50) {
+		if ($cap ~~ [10, 12, 50, 52]) {
 			push(@disks, $_);
 		}
 	}
