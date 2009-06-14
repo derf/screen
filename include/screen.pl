@@ -114,27 +114,17 @@ sub kraftwerk_print_thermal {
 }
 
 sub aneurysm_print_thermal {
-	my @sensors;
-	my $current;
-	my $regex = '^[^\:]+\:\s+\+?(\d+).+$';
-	my ($fan, $chip, $cpu, $sys);
+	my $prefix = '/sys/class/i2c-adapter/i2c-0/0-002d';
+	my $fan = '/sys/devices/platform/smsc47m1.1664/fan2_input';
+	return unless (-d $prefix and -r $fan);
 
-	@sensors = split(/\n/, qx{sensors -A});
-	foreach(@sensors) {
-		/$regex/;
-		$current = lc((split(/\:/))[0]);
-		if ($current eq 'fan2') {
-			$fan = $1;
-		} elsif ($current eq 'chip temp') {
-			$chip = $1;
-		} elsif ($current eq 'cpu temp') {
-			$cpu = $1;
-		} elsif ($current eq 'sys temp') {
-			$sys = $1;
-		}
-	}
-
-	print "fan:$fan chip:$chip cpu:$cpu sys:$sys";
+	printf(
+		'fan:%d  chip:%d  cpu:%d  sys:%d',
+		fromfile($fan),
+		fromfile("$prefix/temp1_input")/1000,
+		fromfile("$prefix/temp2_input")/1000,
+		fromfile("$prefix/temp3_input")/1000,
+	);
 }
 
 sub print_ibm_thermal {
