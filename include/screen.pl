@@ -97,7 +97,7 @@ sub print_ibm_fan {
 
 sub print_eee_fan {
 	my $speed;
-	open(my $fan, '<', '/sys/devices/virtual/hwmon/hwmon1/fan1_input') or return;
+	open(my $fan, '<', '/sys/devices/virtual/hwmon/hwmon0/fan1_input') or return;
 	$speed = <$fan>;
 	close($fan);
 	chomp($speed);
@@ -144,7 +144,7 @@ sub print_ibm_thermal {
 }
 
 sub print_eee_thermal {
-	my $prefix = '/sys/devices/virtual/hwmon/hwmon0';
+	my $prefix = '/sys/devices/virtual/hwmon/hwmon1';
 	return unless (-d $prefix);
 	printf(
 		'cpu:%d',
