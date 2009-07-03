@@ -45,7 +45,7 @@ sub update_battery {
 
 sub fromfile {
 	my $file = shift;
-	open(my $fh, '<', $file) or die("Cannot open $file: $!");
+	open(my $fh, '<', $file) or return(-1);
 	my $content = <$fh>;
 	close($fh);
 	chomp($content);
