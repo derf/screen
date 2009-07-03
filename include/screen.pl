@@ -283,7 +283,7 @@ sub print_interfaces {
 	push(@devices, 'ppp0');
 	device: foreach $device (@devices) {
 		open(my $ifstate, '<', "$ifpre/$device/operstate") or next;
-		if (<$ifstate> eq "up\n") {
+		if (<$ifstate> eq "up\n" or $device eq 'ppp0') {
 			$updevice = $device;
 		}
 		close($ifstate);
