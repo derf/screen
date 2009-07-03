@@ -288,12 +288,14 @@ sub print_interfaces {
 		}
 		close($ifstate);
 	}
-	printf(
-		'%s: %s',
-		$updevice,
-		short_bytes(fromfile("$ifpre/$updevice/statistics/rx_bytes")
-		+ fromfile("$ifpre/$updevice/statistics/tx_bytes")),
-	);
+	if ($updevice) {
+		printf(
+			'%s: %s',
+			$updevice,
+			short_bytes(fromfile("$ifpre/$updevice/statistics/rx_bytes")
+			+ fromfile("$ifpre/$updevice/statistics/tx_bytes")),
+		);
+	}
 }
 
 sub space {
