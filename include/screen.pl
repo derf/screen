@@ -52,6 +52,16 @@ sub fromfile {
 	return($content);
 }
 
+sub short_bytes {
+	my @post = ('', 'k', 'M', 'G');
+	my $bytes = shift;
+	while ($bytes > 1000) {
+		$bytes /= 1000;
+		shift @post;
+	}
+	return(sprintf("%d%s", $bytes, $post[0]));
+}
+
 sub print_ip {
 	open(IP, "</tmp/ip") or return;
 	print <IP>;
@@ -279,9 +289,9 @@ sub print_interfaces {
 	}
 	if (-d "$ifpre/ppp0") {
 		printf(
-			'ppp0: %dk',
-			(fromfile("$ifpre/ppp0/statistics/rx_bytes")
-			+ fromfile("$ifpre/ppp0/statistics/tx_bytes")) / 1000,
+			'ppp0: %s',
+			short_bytes(fromfile("$ifpre/ppp0/statistics/rx_bytes")
+			+ fromfile("$ifpre/ppp0/statistics/tx_bytes")),
 		);
 	}
 }
