@@ -276,24 +276,24 @@ sub print_hddtemp {
 sub print_interfaces {
 	my @devices;
 	my $ifpre = '/sys/class/net';
-	my $device;
+	my ($device, $updevice);
 	opendir(my $ifdir, $ifpre) or return;
 	@devices = grep { ! /^\./ } readdir($ifdir);
 	closedir($ifdir);
+	push(@devices, 'ppp0');
 	device: foreach $device (@devices) {
 		open(my $ifstate, '<', "$ifpre/$device/operstate") or next;
 		if (<$ifstate> eq "up\n") {
-			print "$device";
+			$updevice = $device;
 		}
 		close($ifstate);
 	}
-	if (-d "$ifpre/ppp0") {
-		printf(
-			'ppp0: %s',
-			short_bytes(fromfile("$ifpre/ppp0/statistics/rx_bytes")
-			+ fromfile("$ifpre/ppp0/statistics/tx_bytes")),
-		);
-	}
+	printf(
+		'%s: %s',
+		$updevice,
+		short_bytes(fromfile("$ifpre/$updevice/statistics/rx_bytes")
+		+ fromfile("$ifpre/$updevice/statistics/tx_bytes")),
+	);
 }
 
 sub space {
