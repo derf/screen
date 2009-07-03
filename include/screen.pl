@@ -277,6 +277,13 @@ sub print_interfaces {
 		}
 		close($ifstate);
 	}
+	if (-d "$ifpre/ppp0") {
+		printf(
+			'ppp0: %dk',
+			(fromfile("$ifpre/ppp0/statistics/rx_bytes")
+			+ fromfile("$ifpre/ppp0/statistics/tx_bytes")) / 1000,
+		);
+	}
 }
 
 sub space {
