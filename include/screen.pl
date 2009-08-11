@@ -80,7 +80,7 @@ sub print_mail {
 }
 
 sub print_jabber {
-	my $unread = fromfile("/tmp/.jabber-unread-$>");
+	my $unread = fromfile("/tmp/.jabber-unread-derf");
 	if ($unread > 0) {
 		print "J$unread";
 	}
