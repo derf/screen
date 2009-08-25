@@ -277,6 +277,7 @@ sub print_interfaces {
 	my @devices;
 	my $ifpre = '/sys/class/net';
 	my ($device, $updevice);
+	my $essid;
 	opendir(my $ifdir, $ifpre) or return;
 	@devices = grep { ! /^\./ } readdir($ifdir);
 	closedir($ifdir);
@@ -288,10 +289,14 @@ sub print_interfaces {
 		}
 		close($ifstate);
 	}
+	if ($updevice eq 'ra0') {
+		$essid = qx{iwgetid ra0 --raw};
+		chomp $essid;
+	}
 	if ($updevice) {
 		printf(
 			'%s: %s',
-			$updevice,
+			($essid ? "$updevice\[$essid]" : $updevice),
 			short_bytes(fromfile("$ifpre/$updevice/statistics/rx_bytes")
 			+ fromfile("$ifpre/$updevice/statistics/tx_bytes")),
 		);
