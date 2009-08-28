@@ -290,13 +290,13 @@ sub print_interfaces {
 		close($ifstate);
 	}
 	if ($updevice eq 'ra0') {
-		$essid = qx{iwgetid ra0 --raw};
+		$essid = qx{/sbin/iwgetid ra0 --raw};
 		chomp $essid;
 	}
 	if ($updevice) {
 		printf(
 			'%s: %s',
-			($essid ? "$updevice\[$essid]" : $updevice),
+			(defined($essid) ? "$updevice\[$essid]" : $updevice),
 			short_bytes(fromfile("$ifpre/$updevice/statistics/rx_bytes")
 			+ fromfile("$ifpre/$updevice/statistics/tx_bytes")),
 		);
