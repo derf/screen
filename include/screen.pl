@@ -289,7 +289,7 @@ sub print_interfaces {
 		}
 		close($ifstate);
 	}
-	if ($updevice eq 'ra0') {
+	if (defined $updevice and $updevice eq 'ra0') {
 		$essid = qx{/sbin/iwgetid ra0 --raw};
 		chomp $essid;
 	}
