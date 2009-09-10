@@ -9,4 +9,6 @@ select 1
 focus up
 
 # Press F11 to organize everything after attaching
-bindkey -k F1 source /home/derf/packages/screen/include/aneu
+bindkey -k F1 source /home/derf/packages/screen/include/aneu-start
+# F12 for detaching
+bindkey -k F2 source /home/derf/packages/screen/include/aneu-stop
