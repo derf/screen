@@ -7,6 +7,7 @@ defmode 0600
 defscrollback 1024
 defshell zsh
 defutf8 on
+idle off
 msgwait 2
 shelltitle '> |zsh'
 startup_message off
