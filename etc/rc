@@ -8,7 +8,6 @@ defscrollback 1024
 defshell zsh
 defutf8 on
 msgwait 2
-nethack on
 shelltitle '> |zsh'
 startup_message off
 vbell off

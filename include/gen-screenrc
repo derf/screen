@@ -1,4 +1,4 @@
 #!/bin/sh
 [ -f $HOME/packages/screen/etc/`hostname` ] && \
-	cat $HOME/packages/screen/etc/rc $HOME/packages/screen/etc/`hostname` > $HOME/.screenrc || \
-	cp $HOME/packages/screen/etc/rc $HOME/.screenrc
+	cat $HOME/packages/screen/etc/rc $HOME/packages/screen/etc/`hostname` > $HOME/.tscreenrc || \
+	cp $HOME/packages/screen/etc/rc $HOME/.tscreenrc
