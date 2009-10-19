@@ -6,6 +6,7 @@ use feature 'switch';
 use strict;
 use utf8;
 use warnings;
+
 my $hostname;
 my @battery;
 my @disks;
@@ -18,38 +19,44 @@ my %interval = (
 );
 local $|=1;
 
-open(HOSTNAME, "</etc/hostname");
-chomp($hostname = <HOSTNAME>);
-close(HOSTNAME);
+open(my $hostfh, '<', '/etc/hostname') or die("Cannot open /etc/hostname: $!");
+chomp($hostname = <$hostfh>);
+close($hostfh) or die("Cannot close /etc/hostname: $!");
 
 if (-r "$confdir/$hostname") {
-	unless ($config = do("$confdir/$hostname")) {
-		warn "couldn't parse config: $@" if $@;
-		warn "couldn't do config: $!"    unless defined $config;
-		warn "couldn't run config"       unless $config;
+	if (not ($config = do("$confdir/$hostname"))) {
+		if ($@)                  {warn "couldn't parse config: $@"}
+		if (not defined $config) {warn "couldn't do config: $!"}
+		if (not $config)         {warn 'couldn\'t run config'}
 	}
 }
 
 sub update_battery {
 	@battery = ();
 	if (-d '/sys/class/power_supply') {
-		opendir(POWER, '/sys/class/power_supply');
-		foreach(readdir(POWER)) {
-			if (/^(BAT\d+)$/) {
+		opendir(my $powdir, '/sys/class/power_supply');
+		foreach (readdir($powdir)) {
+			if (/ ^ (BAT \d+ ) $ /x) {
 				push(@battery, $1);
 				last;
 			}
 		}
+		closedir($powdir);
 	}
+	return;
 }
 
 sub fromfile {
 	my $file = shift;
-	open(my $fh, '<', $file) or return(-1);
-	my $content = <$fh>;
-	close($fh);
+	my $content;
+	{
+		local $/ = undef;
+		open(my $fh, '<', $file) or return;
+		$content = <$fh>;
+		close($fh);
+	}
 	chomp($content);
-	return($content);
+	return $content;
 }
 
 sub short_bytes {
@@ -59,68 +66,65 @@ sub short_bytes {
 		$bytes /= 1000;
 		shift @post;
 	}
-	return(sprintf("%d%s", $bytes, $post[0]));
+	return sprintf('%d%s', $bytes, $post[0]);
 }
 
 sub print_ip {
-	open(IP, "</tmp/ip") or return;
-	print <IP>;
-	close(IP);
+	if (-e '/tmp/ip') {
+		print fromfile('/tmp/ip');
+	}
+	return;
 }
 
 sub print_mail {
 	my $new_mail;
-	opendir(MAIL, "$ENV{HOME}/Maildir/new") or return;
-	$new_mail = scalar(@{[readdir(MAIL)]});
-	closedir(MAIL);
+	opendir(my $maildir, "$ENV{HOME}/Maildir/new") or return;
+	$new_mail = scalar(@{[readdir($maildir)]});
+	closedir($maildir);
 	$new_mail -= 2;
 	if ($new_mail) {
 		print "\@$new_mail";
 	}
+	return;
 }
 
 sub print_jabber {
-	my $unread = fromfile("/tmp/.jabber-unread-derf");
+	my $unread = fromfile('/tmp/.jabber-unread-derf');
 	if ($unread > 0) {
 		print "J$unread";
 	}
+	return;
 }
 
 sub print_fan {
-	open(FAN, '</proc/acpi/fan/FAN/state') or return;
-	if (<FAN> =~ /on/) {
+	if (fromfile('/proc/acpi/fan/FAN/state') =~ /on/) {
 		print 'fan';
 	} else {
 		print '   ';
 	}
-	close(FAN);
+	return;
 }
 
 sub print_ibm_fan {
-	my $speed;
-	open(FAN, '<', '/sys/devices/platform/thinkpad_hwmon/fan1_input') or return;
-	$speed = <FAN>;
-	close(FAN);
-	chomp($speed);
+	my $speed = fromfile('/sys/devices/platform/thinkpad_hwmon/fan1_input');
 	print "fan:$speed";
+	return;
 }
 
 sub print_eee_fan {
-	my $speed;
-	open(my $fan, '<', '/sys/devices/virtual/hwmon/hwmon0/fan1_input') or return;
-	$speed = <$fan>;
-	close($fan);
-	chomp($speed);
+	my $speed = fromfile('/sys/devices/virtual/hwmon/hwmon0/fan1_input');
 	print "fan:$speed";
+	return;
 }
 
 sub kraftwerk_print_thermal {
 	my @cputemp;
 	@cputemp = split(/\n/, qx{sensors -A});
-	$cputemp[1]=~s/^[^\.]*(\d{2}\.\d).*$/$1/g;
-	$cputemp[4]=~s/^[^\d]*(\d{2}\.\d).*$/$1/g;
-	$cputemp[5]=~s/^[^\d]*(\d{2}\.\d).*$/$1/g;
+	$cputemp[1] =~ s/ ^ [^\.]* ( \d{2} \. \d ) .* $ /$1/gx;
+	$cputemp[4] =~ s/ ^ [^\d]* ( \d{2} \. \d ) .* $ /$1/gx;
+	$cputemp[5] =~ s/ ^ [^\d]* ( \d{2} \. \d ) .* $ /$1/gx;
 	print "board $cputemp[4] proc $cputemp[1] ($cputemp[5])";
+	return;
 }
 
 sub aneurysm_print_thermal {
@@ -135,11 +139,10 @@ sub aneurysm_print_thermal {
 		fromfile("$prefix/temp2_input")/1000,
 		fromfile("$prefix/temp3_input")/1000,
 	);
+	return;
 }
 
 sub print_ibm_thermal {
-	my @thermal;
-	my $i;
 	my $prefix = '/sys/devices/platform/thinkpad_hwmon';
 	return unless (-d $prefix);
 	printf(
@@ -151,15 +154,19 @@ sub print_ibm_thermal {
 		fromfile("$prefix/temp5_input")/1000,
 		fromfile("$prefix/temp7_input")/1000,
 	);
+	return;
 }
 
 sub print_eee_thermal {
 	my $prefix = '/sys/devices/virtual/hwmon/hwmon1';
-	return unless (-d $prefix);
+	if (not -e "$prefix/temp1_input") {
+		return;
+	}
 	printf(
 		'cpu:%d',
 		fromfile("$prefix/temp1_input")/1000,
 	);
+	return;
 }
 
 sub print_battery {
@@ -173,15 +180,15 @@ sub print_battery {
 	$info{charging_state} = lc(fromfile("$prefix/status"));
 	$info{present_rate} = fromfile("$prefix/current_now")/1000;
 	$info{present} = fromfile("$prefix/present");
-	print(lc($bat));
+	print lc($bat);
 	if ($info{present} == 0) {
 		return;
 	}
 
 	# prevent division by zero
-	foreach (\@info{'last_full_capacity', 'design_capacity', 'present_rate'}) {
-		unless ($$_) {
-			$$_ = -1;
+	foreach (@info{'last_full_capacity', 'design_capacity', 'present_rate'}) {
+		if ($_ == 0) {
+			$_ = -1;
 		}
 	}
 
@@ -192,6 +199,7 @@ sub print_battery {
 		$interval{current} = $interval{battery};
 	} else {
 		$interval{current} = $interval{ac};
+		print STDERR $info{charging_state};
 	}
 
 	given($info{charging_state}) {
@@ -225,74 +233,80 @@ sub print_battery {
 			);
 		}
 	}
+	return;
 }
 
 sub print_np {
 	if (-f '/tmp/np') {
-		open(NP, '</tmp/np') or return;
-		print <NP>;
-		close(NP);
+		print fromfile('/tmp/np');
 	} else {
 		print qx{/home/derf/bin/np | tr -d "\n"};
 	}
+	return;
 }
 
 sub print_meminfo {
 	my ($mem, $memfree);
 	my ($swap, $swapfree);
-	open(MEMINFO, '<', '/proc/meminfo') or return;
-	while(<MEMINFO>) {
-		chomp;
-		/^([^:]+): *(\d+) kB$/;
-		given($1) {
-			when('MemTotal') {$mem = $2}
-			when('MemFree')  {$memfree = $2}
-			when('Buffers')  {$memfree += $2}
-			when('Cached')   {$memfree += $2}
-			when('SwapTotal'){$swap = $2}
-			when('SwapFree') {$swapfree = $2}
+	foreach my $line (split(/\n/, fromfile('/proc/meminfo'))) {
+		$line =~ / ^ (?<key> [^:]+ ): \s* (?<value> \d+ ) \s kB $ /x or next;
+		given($+{key}) {
+			when('MemTotal') {$mem = $+{value}}
+			when('MemFree')  {$memfree = $+{value}}
+			when('Buffers')  {$memfree += $+{value}}
+			when('Cached')   {$memfree += $+{value}}
+			when('SwapTotal'){$swap = $+{value}}
+			when('SwapFree') {$swapfree = $+{value}}
 		}
 	}
-	close(MEMINFO);
-	foreach (\$mem, \$memfree, \$swap, \$swapfree) {
-		$$_ /= 1024;
-		$$_ = int($$_);
+	foreach ($mem, $memfree, $swap, $swapfree) {
+		$_ /= 1024;
+		$_ = int($_);
 	}
 	printf('mem:%d ', $mem-$memfree);
 	printf('swap:%d', $swap-$swapfree);
+	return;
 }
 
 sub print_hddtemp {
 	my $disk = shift;
 	my $hddtemp = '/usr/sbin/hddtemp';
-	return unless (-u $hddtemp);
+	if (not -u $hddtemp) {
+		return;
+	}
 	chomp(my $temp = qx{$hddtemp -n /dev/$disk});
-	unless(length($temp)) {
+	if (length($temp) == 0) {
 		$temp = '-';
 	}
 	print "$disk:$temp";
+	return;
 }
 
 sub print_interfaces {
 	my @devices;
 	my $ifpre = '/sys/class/net';
-	my ($device, $updevice);
 	my $essid;
+	my $updevice;
+
 	opendir(my $ifdir, $ifpre) or return;
 	@devices = grep { ! /^\./ } readdir($ifdir);
 	closedir($ifdir);
+
 	push(@devices, 'ppp0');
-	device: foreach $device (@devices) {
+
+	DEVICE: foreach my $device (@devices) {
 		open(my $ifstate, '<', "$ifpre/$device/operstate") or next;
 		if (<$ifstate> eq "up\n" or $device eq 'ppp0') {
 			$updevice = $device;
 		}
 		close($ifstate);
 	}
+
 	if (defined $updevice and $updevice eq 'ra0') {
 		$essid = qx{/sbin/iwgetid ra0 --raw};
 		chomp $essid;
 	}
+
 	if ($updevice) {
 		printf(
 			'%s: %s',
@@ -301,26 +315,28 @@ sub print_interfaces {
 			+ fromfile("$ifpre/$updevice/statistics/tx_bytes")),
 		);
 	}
+	return;
 }
 
 sub space {
 	print '   ';
+	return;
 }
 
-if (-u '/usr/sbin/hddtemp' and opendir(DISKS, '/sys/block')) {
-	foreach(readdir(DISKS)) {
-		next unless /^[hs]d[a-z]$/;
-		open(CAP, '<', "/sys/block/$_/capability") or next;
-		chomp(my $cap = <CAP>);
-		close(CAP);
+if (-u '/usr/sbin/hddtemp' and opendir(my $diskdir, '/sys/block')) {
+	foreach my $disk (readdir($diskdir)) {
+		if ($disk !~ / ^ [hs] d [a-z] $/x) {
+			next;
+		}
+		my $cap = fromfile("/sys/block/$disk/capability");
 		if ($cap ~~ [10, 12, 50, 52]) {
-			push(@disks, $_);
+			push(@disks, $disk);
 		}
 	}
-	closedir(DISKS);
+	closedir($diskdir);
 }
 
-do {
+while (1) {
 	update_battery;
 	if ($config->{meminfo}) {
 		print_meminfo;
@@ -378,4 +394,5 @@ do {
 		print_np;
 	}
 	print "\n";
-} while (sleep($interval{current}))
+	sleep($interval{current});
+}
