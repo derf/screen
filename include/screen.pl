@@ -7,6 +7,7 @@ use strict;
 use utf8;
 use warnings;
 
+my $loop = shift || 0;
 my $hostname;
 my @battery;
 my @disks;
@@ -336,7 +337,7 @@ if (-u '/usr/sbin/hddtemp' and opendir(my $diskdir, '/sys/block')) {
 	closedir($diskdir);
 }
 
-while (1) {
+while ($loop) {
 	update_battery;
 	if ($config->{meminfo}) {
 		print_meminfo;
