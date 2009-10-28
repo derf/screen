@@ -337,7 +337,7 @@ if (-u '/usr/sbin/hddtemp' and opendir(my $diskdir, '/sys/block')) {
 	closedir($diskdir);
 }
 
-while ($loop) {
+do {
 	update_battery;
 	if ($config->{meminfo}) {
 		print_meminfo;
@@ -395,5 +395,7 @@ while ($loop) {
 		print_np;
 	}
 	print "\n";
-	sleep($interval{current});
-}
+	if ($loop == 1) {
+		sleep($interval{current});
+	}
+} while($loop == 1);
