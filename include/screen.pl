@@ -8,6 +8,7 @@ use utf8;
 use warnings;
 
 my $loop = shift || 0;
+my $buf;
 my $hostname;
 my @battery;
 my @disks;
@@ -72,7 +73,7 @@ sub short_bytes {
 
 sub print_ip {
 	if (-e '/tmp/ip') {
-		print fromfile('/tmp/ip');
+		$buf .= fromfile('/tmp/ip');
 	}
 	return;
 }
@@ -84,7 +85,7 @@ sub print_mail {
 	closedir($maildir);
 	$new_mail -= 2;
 	if ($new_mail) {
-		print "\@$new_mail";
+		$buf .= "\@$new_mail";
 	}
 	return;
 }
@@ -92,29 +93,29 @@ sub print_mail {
 sub print_jabber {
 	my $unread = fromfile('/tmp/.jabber-unread-derf');
 	if ($unread > 0) {
-		print "J$unread";
+		$buf .= "J$unread";
 	}
 	return;
 }
 
 sub print_fan {
 	if (fromfile('/proc/acpi/fan/FAN/state') =~ /on/) {
-		print 'fan';
+		$buf .= 'fan';
 	} else {
-		print '   ';
+		$buf .= '   ';
 	}
 	return;
 }
 
 sub print_ibm_fan {
 	my $speed = fromfile('/sys/devices/platform/thinkpad_hwmon/fan1_input');
-	print "fan:$speed";
+	$buf .= "fan:$speed";
 	return;
 }
 
 sub print_eee_fan {
 	my $speed = fromfile('/sys/devices/virtual/hwmon/hwmon0/fan1_input');
-	print "fan:$speed";
+	$buf .= "fan:$speed";
 	return;
 }
 
@@ -124,7 +125,7 @@ sub kraftwerk_print_thermal {
 	$cputemp[1] =~ s/ ^ [^\.]* ( \d{2} \. \d ) .* $ /$1/gx;
 	$cputemp[4] =~ s/ ^ [^\d]* ( \d{2} \. \d ) .* $ /$1/gx;
 	$cputemp[5] =~ s/ ^ [^\d]* ( \d{2} \. \d ) .* $ /$1/gx;
-	print "board $cputemp[4] proc $cputemp[1] ($cputemp[5])";
+	$buf .= "board $cputemp[4] proc $cputemp[1] ($cputemp[5])";
 	return;
 }
 
@@ -133,7 +134,7 @@ sub aneurysm_print_thermal {
 	my $fan = '/sys/devices/platform/smsc47m1.1664/fan2_input';
 	return unless (-d $prefix and -r $fan);
 
-	printf(
+	$buf .= sprintf(
 		'fan:%d  chip:%d  cpu:%d  sys:%d',
 		fromfile($fan),
 		fromfile("$prefix/temp1_input")/1000,
@@ -146,7 +147,7 @@ sub aneurysm_print_thermal {
 sub print_ibm_thermal {
 	my $prefix = '/sys/devices/platform/thinkpad_hwmon';
 	return unless (-d $prefix);
-	printf(
+	$buf .= sprintf(
 		'cpu:%d ?:%d board:%d gpu:%d bat:%d:%d ',
 		fromfile("$prefix/temp1_input")/1000,
 		fromfile("$prefix/temp2_input")/1000,
@@ -163,7 +164,7 @@ sub print_eee_thermal {
 	if (not -e "$prefix/temp1_input") {
 		return;
 	}
-	printf(
+	$buf .= printf(
 		'cpu:%d',
 		fromfile("$prefix/temp1_input")/1000,
 	);
@@ -181,7 +182,7 @@ sub print_battery {
 	$info{charging_state} = lc(fromfile("$prefix/status"));
 	$info{present_rate} = fromfile("$prefix/current_now")/1000;
 	$info{present} = fromfile("$prefix/present");
-	print lc($bat);
+	$buf .= lc($bat);
 	if ($info{present} == 0) {
 		return;
 	}
@@ -200,12 +201,11 @@ sub print_battery {
 		$interval{current} = $interval{battery};
 	} else {
 		$interval{current} = $interval{ac};
-		print STDERR $info{charging_state};
 	}
 
 	given($info{charging_state}) {
 		when('discharging') {
-			printf(
+			$buf .= sprintf(
 				' v %.f%%, %02d:%02.fh remaining',
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
@@ -213,7 +213,7 @@ sub print_battery {
 			);
 		}
 		when('charging') {
-			printf(
+			$buf .= sprintf(
 				' ^ %.f%%, %02d:%02.fh remaining',
 				$capacity,
 				($info{last_full_capacity} - $info{remaining_capacity}) / $info{present_rate},
@@ -221,14 +221,14 @@ sub print_battery {
 			);
 		}
 		when('full') {
-			printf(
+			$buf .= sprintf(
 				' = %.f%%, %.f%% health',
 				$capacity,
 				$health,
 			);
 		}
 		default {
-			printf(
+			$buf .= sprintf(
 				' ? %.f%%',
 				$capacity,
 			);
@@ -239,9 +239,9 @@ sub print_battery {
 
 sub print_np {
 	if (-f '/tmp/np') {
-		print fromfile('/tmp/np');
+		$buf .= fromfile('/tmp/np');
 	} else {
-		print qx{/home/derf/bin/np | tr -d "\n"};
+		$buf .= qx{/home/derf/bin/np | tr -d "\n"};
 	}
 	return;
 }
@@ -264,8 +264,11 @@ sub print_meminfo {
 		$_ /= 1024;
 		$_ = int($_);
 	}
-	printf('mem:%d ', $mem-$memfree);
-	printf('swap:%d', $swap-$swapfree);
+	$buf .= sprintf(
+		'mem:%d swap:%d',
+		$mem - $memfree,
+		$swap - $swapfree,
+	);
 	return;
 }
 
@@ -279,7 +282,7 @@ sub print_hddtemp {
 	if (length($temp) == 0) {
 		$temp = '-';
 	}
-	print "$disk:$temp";
+	$buf .= "$disk:$temp";
 	return;
 }
 
@@ -309,7 +312,7 @@ sub print_interfaces {
 	}
 
 	if ($updevice) {
-		printf(
+		$buf .= sprintf(
 			'%s: %s',
 			(defined($essid) ? "$updevice\[$essid]" : $updevice),
 			short_bytes(fromfile("$ifpre/$updevice/statistics/rx_bytes")
@@ -320,7 +323,7 @@ sub print_interfaces {
 }
 
 sub space {
-	print '   ';
+	$buf .= '   ';
 	return;
 }
 
@@ -394,8 +397,14 @@ do {
 		space;
 		print_np;
 	}
-	print "\n";
-	if ($loop == 1) {
+	if ($loop ~~ [0, 1]) {
+		print "$buf\n";
+	}
+	elsif ($loop == 2) {
+		system('tmux', 'set-option', 'status-right', $buf);
+	}
+	if ($loop ~~ [1, 2]) {
 		sleep($interval{current});
 	}
-} while($loop == 1);
+	$buf = '';
+} while($loop);
