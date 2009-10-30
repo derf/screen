@@ -164,7 +164,7 @@ sub print_eee_thermal {
 	if (not -e "$prefix/temp1_input") {
 		return;
 	}
-	$buf .= printf(
+	$buf .= sprintf(
 		'cpu:%d',
 		fromfile("$prefix/temp1_input")/1000,
 	);
