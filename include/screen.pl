@@ -6,6 +6,7 @@ use feature 'switch';
 use strict;
 use utf8;
 use warnings;
+use Date::Format;
 
 my $loop = shift || 0;
 my $buf;
@@ -402,6 +403,7 @@ do {
 	}
 	elsif ($loop == 2) {
 		system('tmux', 'set-option', 'status-right', $buf);
+		system('tmux', 'set-option', 'status-left', strftime("%Y-%m-%d %H:%M ", @{[localtime(time)]}));
 	}
 	if ($loop ~~ [1, 2]) {
 		sleep($interval{current});
