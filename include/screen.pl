@@ -266,10 +266,15 @@ sub print_meminfo {
 		$_ = int($_);
 	}
 	$buf .= sprintf(
-		'mem:%d swap:%d',
+		'mem:%d',
 		$mem - $memfree,
-		$swap - $swapfree,
 	);
+	if ($swap > 0) {
+		$buf .= sprintf(
+			' swap:%d',
+			$swap - $swapfree,
+		);
+	}
 	return;
 }
 
