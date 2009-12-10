@@ -34,6 +34,11 @@ if (-r "$confdir/$hostname") {
 	}
 }
 
+sub space {
+	$buf .= '   ';
+	return;
+}
+
 sub update_battery {
 	@battery = ();
 	if (-d '/sys/class/power_supply') {
@@ -294,6 +299,7 @@ sub print_hddtemp {
 
 sub print_interfaces {
 	my @devices;
+	my @updevices;
 	my $ifpre = '/sys/class/net';
 	my $essid;
 	my $updevice;
@@ -307,29 +313,27 @@ sub print_interfaces {
 	DEVICE: foreach my $device (@devices) {
 		open(my $ifstate, '<', "$ifpre/$device/operstate") or next;
 		if (<$ifstate> eq "up\n" or $device eq 'ppp0') {
-			$updevice = $device;
+			push(@updevices, $device);
 		}
 		close($ifstate);
 	}
 
-	if (defined $updevice and $updevice eq 'ra0') {
-		$essid = qx{/sbin/iwgetid ra0 --raw};
-		chomp $essid;
+	foreach my $device (@updevices) {
+		if ($device eq 'ra0') {
+			$essid = qx{/sbin/iwgetid ra0 --raw};
+			chomp $essid;
+		}
 	}
 
-	if ($updevice) {
+	foreach my $device (@updevices) {
+		space;
 		$buf .= sprintf(
 			'%s: %s',
-			(defined($essid) ? "$updevice\[$essid]" : $updevice),
-			short_bytes(fromfile("$ifpre/$updevice/statistics/rx_bytes")
-			+ fromfile("$ifpre/$updevice/statistics/tx_bytes")),
+			(($device eq 'ra0' and defined($essid)) ? "$device\[$essid]" : $device),
+			short_bytes(fromfile("$ifpre/$device/statistics/rx_bytes")
+			+ fromfile("$ifpre/$device/statistics/tx_bytes")),
 		);
 	}
-	return;
-}
-
-sub space {
-	$buf .= '   ';
 	return;
 }
 
@@ -379,7 +383,6 @@ do {
 	}
 
 	if ($config->{interfaces}) {
-		space;
 		print_interfaces;
 	}
 
