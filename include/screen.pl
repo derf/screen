@@ -302,7 +302,6 @@ sub print_interfaces {
 	my @updevices;
 	my $ifpre = '/sys/class/net';
 	my $essid;
-	my $updevice;
 
 	opendir(my $ifdir, $ifpre) or return;
 	@devices = grep { ! /^\./ } readdir($ifdir);
@@ -411,7 +410,7 @@ do {
 	}
 	elsif ($loop == 2) {
 		system('tmux', 'set-option', 'status-right', $buf);
-		system('tmux', 'set-option', 'status-left', strftime("%Y-%m-%d %H:%M ", @{[localtime(time)]}));
+		system('tmux', 'set-option', 'status-left', strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]}));
 	}
 	if ($loop ~~ [1, 2]) {
 		sleep($interval{current});
