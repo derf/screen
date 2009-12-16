@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -f pid ]; then
-	kill -TERM `cat pid`
-	rm pid
+if [ -f $PIDFILE ]; then
+	kill -TERM `cat $PIDFILE`
+	rm $PIDFILE
 fi

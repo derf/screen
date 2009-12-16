@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -r pid ] && kill -0 `cat pid` 2> /dev/null; then
+if [ -r $PIDFILE ] && kill -0 `cat $PIDFILE` 2> /dev/null; then
 	exit 0
 else
 	exit 1
