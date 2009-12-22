@@ -13,6 +13,8 @@ my $buf;
 my $hostname;
 my @battery;
 my @disks;
+my @maildirs;
+my $mailpre = "$ENV{HOME}/Maildir";
 my $config;
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my %interval = (
@@ -25,6 +27,17 @@ local $|=1;
 open(my $hostfh, '<', '/etc/hostname') or die("Cannot open /etc/hostname: $!");
 chomp($hostname = <$hostfh>);
 close($hostfh) or die("Cannot close /etc/hostname: $!");
+
+if (-r "$mailpre/maildirs") {
+	open(my $mailfh, '<', "$mailpre/maildirs") or die("Cannot open $mailpre/maildirs: $!");
+
+	while (my $line = <$mailfh>) {
+		chomp $line;
+		push(@maildirs, $line);
+	}
+
+	close($mailfh);
+}
 
 if (-r "$confdir/$hostname") {
 	if (not ($config = do("$confdir/$hostname"))) {
@@ -85,15 +98,23 @@ sub print_ip {
 }
 
 sub print_mail {
-	my $new_mail;
-	opendir(my $maildir, "$ENV{HOME}/Maildir/new") or return;
-	$new_mail = scalar(@{[readdir($maildir)]});
-	closedir($maildir);
-	$new_mail -= 2;
-	if ($new_mail) {
-		$buf .= "\@$new_mail";
+	my $space = 0;
+	foreach my $maildir (@maildirs) {
+
+		opendir(my $maildh, "$mailpre/$maildir/new") or next;
+		my $new_mail = scalar(@{[readdir($maildh)]}) - 2;
+		closedir($maildh);
+
+		if ($new_mail) {
+			if ($space) {
+				$buf .= ' ';
+			}
+			else {
+				$space = 1;
+			}
+			$buf .= "{$maildir}";
+		}
 	}
-	return;
 }
 
 sub print_jabber {
