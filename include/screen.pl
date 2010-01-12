@@ -328,8 +328,6 @@ sub print_interfaces {
 	@devices = grep { ! /^\./ } readdir($ifdir);
 	closedir($ifdir);
 
-	push(@devices, 'ppp0');
-
 	DEVICE: foreach my $device (@devices) {
 		open(my $ifstate, '<', "$ifpre/$device/operstate") or next;
 		if (<$ifstate> eq "up\n" or $device eq 'ppp0') {
