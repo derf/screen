@@ -156,7 +156,7 @@ sub kraftwerk_print_thermal {
 
 sub aneurysm_print_thermal {
 	my $prefix = '/sys/class/i2c-adapter/i2c-0/0-002d';
-	my $fan = '/sys/devices/platform/smsc47m1.1664/fan2_input';
+	my $fan = '/sys/devices/platform/smsc47m1.1664/fan1_input';
 	return unless (-d $prefix and -r $fan);
 
 	$buf .= sprintf(
