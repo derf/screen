@@ -128,8 +128,6 @@ sub print_jabber {
 sub print_fan {
 	if (fromfile('/proc/acpi/fan/FAN/state') =~ /on/) {
 		$buf .= 'fan';
-	} else {
-		$buf .= '   ';
 	}
 	return;
 }
