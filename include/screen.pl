@@ -429,7 +429,10 @@ do {
 		system('tmux', 'set-option', 'status-right', $buf);
 		system('tmux', 'set-option', 'status-left', strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]}));
 	}
-	if ($loop ~~ [1, 2]) {
+	elsif ($loop == 3) {
+		system('xsetroot', '-name', $buf);
+	}
+	if ($loop ~~ [1, 2, 3]) {
 		sleep($interval{current});
 	}
 	$buf = '';
