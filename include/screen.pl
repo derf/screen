@@ -7,8 +7,14 @@ use strict;
 use utf8;
 use warnings;
 use Date::Format;
+use constant {
+	LOOP_NONE => 0,
+	LOOP_SCREEN => 1,
+	LOOP_TMUX => 2,
+	LOOP_DWM => 3,
+};
 
-my $loop = shift || 0;
+my $loop = shift || LOOP_NONE;
 my $buf;
 my $hostname;
 my @battery;
@@ -375,7 +381,7 @@ do {
 		print_np;
 		space;
 	}
-	if ($loop == 3) {
+	if ($loop == LOOP_DWM) {
 		$buf .= strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]});
 		space;
 	}
@@ -429,17 +435,17 @@ do {
 		space;
 		print_ip;
 	}
-	if ($loop ~~ [0, 1]) {
+	if ($loop ~~ [LOOP_NONE, LOOP_SCREEN]) {
 		print "$buf\n";
 	}
-	elsif ($loop == 2) {
+	elsif ($loop == LOOP_TMUX) {
 		system('tmux', 'set-option', 'status-right', $buf);
 		system('tmux', 'set-option', 'status-left', strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]}));
 	}
-	elsif ($loop == 3) {
+	elsif ($loop == LOOP_DWM) {
 		system('xsetroot', '-name', $buf);
 	}
-	if ($loop ~~ [1, 2, 3]) {
+	if ($loop != LOOP_NONE) {
 		sleep($interval{current});
 	}
 	$buf = '';
