@@ -17,6 +17,7 @@ my @maildirs;
 my $mailpre = "$ENV{HOME}/Maildir";
 my $config;
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
+my $on_battery = 0;
 my %interval = (
 	current => 10,
 	ac      => 10,
@@ -224,8 +225,10 @@ sub print_battery {
 
 	if ($info{charging_state} eq 'discharging') {
 		$interval{current} = $interval{battery};
+		$on_battery = 1;
 	} else {
 		$interval{current} = $interval{ac};
+		$on_battery = 0;
 	}
 
 	given($info{charging_state}) {
@@ -263,10 +266,10 @@ sub print_battery {
 }
 
 sub print_np {
-	if (-f '/tmp/np') {
-		$buf .= fromfile('/tmp/np');
-	} else {
-		$buf .= qx{/home/derf/bin/np | tr -d "\n"};
+	my $np = qx{envify music np};
+	if (length($np)) {
+		$np =~ s/\n//s;
+		$buf .= $np;
 	}
 	return;
 }
@@ -368,6 +371,14 @@ if (-u '/usr/sbin/hddtemp' and opendir(my $diskdir, '/sys/block')) {
 
 do {
 	update_battery;
+	if (!$on_battery and $config->{np}) {
+		print_np;
+		space;
+	}
+	if ($loop == 3) {
+		$buf .= strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]});
+		space;
+	}
 	if ($config->{meminfo}) {
 		print_meminfo;
 	}
@@ -417,10 +428,6 @@ do {
 	if (-r '/tmp/ip') {
 		space;
 		print_ip;
-	}
-	if (-r '/tmp/np') {
-		space;
-		print_np;
 	}
 	if ($loop ~~ [0, 1]) {
 		print "$buf\n";
