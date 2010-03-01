@@ -12,6 +12,7 @@ use constant {
 	LOOP_SCREEN => 1,
 	LOOP_TMUX => 2,
 	LOOP_DWM => 3,
+	SSH_FILE => '/tmp/ssh-aneurysm-22-derf',
 };
 
 my $loop = shift || LOOP_NONE;
@@ -23,6 +24,7 @@ my @maildirs;
 my $mailpre = "$ENV{HOME}/Maildir";
 my $config;
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
+my $ssh_command = 'ssh -o ConnectTimeout=2';
 my $on_battery = 0;
 my %interval = (
 	current => 10,
@@ -106,6 +108,21 @@ sub print_ip {
 
 sub print_mail {
 	my $space = 0;
+
+	if ($hostname ne 'aneurysm' and -e SSH_FILE) {
+		my $raw = qx|$ssh_command aneurysm 'for i (\$(cat Maildir/maildirs)) {
+			[[ -n \$(echo Maildir/\$i/new/*(N)) ]] && echo \$i; true }'|;
+
+		if ($? >> 8) {
+			$raw = 'error';
+		}
+
+		if (length($raw)) {
+			$buf .= 'mail:' . join(' ', split(/\n/, $raw));
+		}
+		return;
+	}
+
 	foreach my $maildir (@maildirs) {
 
 		opendir(my $maildh, "$mailpre/$maildir/new") or next;
@@ -125,7 +142,13 @@ sub print_mail {
 }
 
 sub print_jabber {
-	my $unread = fromfile('/tmp/.jabber-unread-derf');
+	my $unread;
+	if ($hostname ne 'aneurysm' and -e SSH_FILE) {
+		$unread = qx|$ssh_command aneurysm 'cat /tmp/.jabber-unread-derf'|;
+	}
+	else {
+		$unread = fromfile('/tmp/.jabber-unread-derf');
+	}
 	if ($unread > 0) {
 		$buf .= "J$unread";
 	}
@@ -424,11 +447,11 @@ do {
 		print_battery($_);
 	}
 
-	if (-d "$ENV{HOME}/Maildir/new") {
+	if (-d "$ENV{HOME}/Maildir/new" or -e SSH_FILE) {
 		space;
 		print_mail;
 	}
-	if (-r "/tmp/.jabber-unread-$>") {
+	if (-r "/tmp/.jabber-unread-$>" or -e SSH_FILE) {
 		print_jabber;
 	}
 	if (-r '/tmp/ip') {
