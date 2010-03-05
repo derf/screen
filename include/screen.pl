@@ -12,7 +12,8 @@ use constant {
 	LOOP_SCREEN => 1,
 	LOOP_TMUX => 2,
 	LOOP_DWM => 3,
-	SSH_FILE => '/tmp/ssh-aneurysm-22-derf',
+	SSH_INT => '/tmp/ssh-aneurysm-22-derf',
+	SSH_EXT => '/tmp/ssh-derf.homelinux.org-22-derf',
 };
 
 my $loop = shift || LOOP_NONE;
@@ -109,7 +110,7 @@ sub print_ip {
 sub print_mail {
 	my $space = 0;
 
-	if ($hostname ne 'aneurysm' and -e SSH_FILE) {
+	if ($hostname ne 'aneurysm' and (-e SSH_INT or -e SSH_EXT)) {
 		my $raw = qx|$ssh_command aneurysm 'for i (\$(cat Maildir/maildirs)) {
 			[[ -n \$(echo Maildir/\$i/new/*(N)) ]] && echo \$i; true }'|;
 
@@ -143,7 +144,7 @@ sub print_mail {
 
 sub print_jabber {
 	my $unread;
-	if ($hostname ne 'aneurysm' and -e SSH_FILE) {
+	if ($hostname ne 'aneurysm' and (-e SSH_INT or -e SSH_EXT)) {
 		$unread = qx|$ssh_command aneurysm 'cat /tmp/.jabber-unread-derf'|;
 	}
 	else {
@@ -447,11 +448,11 @@ do {
 		print_battery($_);
 	}
 
-	if (-d "$ENV{HOME}/Maildir/new" or -e SSH_FILE) {
+	if (-d "$ENV{HOME}/Maildir/new" or -e SSH_INT or -e SSH_EXT) {
 		space;
 		print_mail;
 	}
-	if (-r "/tmp/.jabber-unread-$>" or -e SSH_FILE) {
+	if (-r "/tmp/.jabber-unread-$>" or -e SSH_INT or -e SSH_EXT) {
 		print_jabber;
 	}
 	if (-r '/tmp/ip') {
