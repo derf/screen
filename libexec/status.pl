@@ -107,6 +107,7 @@ sub print_mail {
 		}
 
 		if (length($raw)) {
+			space;
 			$buf .= 'mail:' . join(' ', split(/\n/, $raw));
 		}
 		return;
