@@ -360,10 +360,6 @@ do {
 		print_np;
 		space;
 	}
-	if ($loop == LOOP_DWM) {
-		$buf .= strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]});
-		space;
-	}
 	if ($config->{meminfo}) {
 		print_meminfo;
 	}
@@ -400,6 +396,10 @@ do {
 	}
 	if (-r "/tmp/.jabber-unread-$>" or -e SSH_INT or -e SSH_EXT) {
 		print_jabber;
+		space;
+	}
+	if ($loop == LOOP_DWM) {
+		$buf .= strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]});
 	}
 	if ($loop ~~ [LOOP_NONE, LOOP_SCREEN]) {
 		print "$buf\n";
