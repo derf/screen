@@ -100,13 +100,6 @@ sub short_bytes {
 	return sprintf('%d%s', $bytes, $post[0]);
 }
 
-sub print_ip {
-	if (-e '/tmp/ip') {
-		$buf .= fromfile('/tmp/ip');
-	}
-	return;
-}
-
 sub print_mail {
 	my $space = 0;
 
@@ -156,32 +149,9 @@ sub print_jabber {
 	return;
 }
 
-sub print_fan {
-	if (fromfile('/proc/acpi/fan/FAN/state') =~ /on/) {
-		$buf .= 'fan';
-	}
-	return;
-}
-
-sub print_ibm_fan {
-	my $speed = fromfile('/sys/devices/platform/thinkpad_hwmon/fan1_input');
-	$buf .= "fan:$speed";
-	return;
-}
-
 sub print_eee_fan {
 	my $speed = fromfile('/sys/devices/virtual/hwmon/hwmon0/fan1_input');
 	$buf .= "fan:$speed";
-	return;
-}
-
-sub kraftwerk_print_thermal {
-	my @cputemp;
-	@cputemp = split(/\n/, qx{sensors -A});
-	$cputemp[1] =~ s/ ^ [^\.]* ( \d{2} \. \d ) .* $ /$1/gx;
-	$cputemp[4] =~ s/ ^ [^\d]* ( \d{2} \. \d ) .* $ /$1/gx;
-	$cputemp[5] =~ s/ ^ [^\d]* ( \d{2} \. \d ) .* $ /$1/gx;
-	$buf .= "board $cputemp[4] proc $cputemp[1] ($cputemp[5])";
 	return;
 }
 
@@ -196,21 +166,6 @@ sub aneurysm_print_thermal {
 		fromfile("$prefix/temp1_input")/1000,
 		fromfile("$prefix/temp2_input")/1000,
 		fromfile("$prefix/temp3_input")/1000,
-	);
-	return;
-}
-
-sub print_ibm_thermal {
-	my $prefix = '/sys/devices/platform/thinkpad_hwmon';
-	return unless (-d $prefix);
-	$buf .= sprintf(
-		'cpu:%d ?:%d board:%d gpu:%d bat:%d:%d ',
-		fromfile("$prefix/temp1_input")/1000,
-		fromfile("$prefix/temp2_input")/1000,
-		fromfile("$prefix/temp3_input")/1000,
-		fromfile("$prefix/temp4_input")/1000,
-		fromfile("$prefix/temp5_input")/1000,
-		fromfile("$prefix/temp7_input")/1000,
 	);
 	return;
 }
@@ -412,22 +367,13 @@ do {
 	if ($config->{meminfo}) {
 		print_meminfo;
 	}
-	if (-d '/sys/devices/platform/thinkpad_hwmon') {
-		space;
-		print_ibm_fan;
-		space;
-		print_ibm_thermal;
-	}
 	if (-d '/sys/devices/virtual/hwmon/hwmon0') {
 		space;
 		print_eee_fan;
 		space;
 		print_eee_thermal;
 	}
-	if ($hostname eq 'kraftwerk') {
-		space;
-		kraftwerk_print_thermal;
-	} elsif ($hostname eq 'aneurysm') {
+	if ($hostname eq 'aneurysm') {
 		space;
 		aneurysm_print_thermal;
 	}
@@ -454,10 +400,6 @@ do {
 	}
 	if (-r "/tmp/.jabber-unread-$>" or -e SSH_INT or -e SSH_EXT) {
 		print_jabber;
-	}
-	if (-r '/tmp/ip') {
-		space;
-		print_ip;
 	}
 	if ($loop ~~ [LOOP_NONE, LOOP_SCREEN]) {
 		print "$buf\n";
