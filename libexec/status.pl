@@ -8,15 +8,10 @@ use utf8;
 use warnings;
 use Date::Format;
 use constant {
-	LOOP_NONE => 0,
-	LOOP_SCREEN => 1,
-	LOOP_TMUX => 2,
-	LOOP_DWM => 3,
 	SSH_INT => '/tmp/ssh-aneurysm-22-derf',
 	SSH_EXT => '/tmp/ssh-derf.homelinux.org-22-derf',
 };
 
-my $loop = shift || LOOP_NONE;
 my $buf;
 my $hostname;
 my @battery;
@@ -103,7 +98,7 @@ sub short_bytes {
 sub print_mail {
 	my $space = 0;
 
-	if ($hostname ne 'aneurysm' and (-e SSH_INT or -e SSH_EXT)) {
+	if (-e SSH_INT or -e SSH_EXT) {
 		my $raw = qx|$ssh_command aneurysm 'for i (\$(cat Maildir/maildirs)) {
 			[[ -n \$(echo Maildir/\$i/new/*(N)) ]] && echo \$i; true }'|;
 
@@ -116,32 +111,12 @@ sub print_mail {
 		}
 		return;
 	}
-
-	foreach my $maildir (@maildirs) {
-
-		opendir(my $maildh, "$mailpre/$maildir/new") or next;
-		my $new_mail = scalar(@{[readdir($maildh)]}) - 2;
-		closedir($maildh);
-
-		if ($new_mail) {
-			if ($space) {
-				$buf .= ' ';
-			}
-			else {
-				$space = 1;
-			}
-			$buf .= "{$maildir}";
-		}
-	}
 }
 
 sub print_jabber {
 	my $unread;
-	if ($hostname ne 'aneurysm' and (-e SSH_INT or -e SSH_EXT)) {
+	if (-e SSH_INT or -e SSH_EXT) {
 		$unread = qx|$ssh_command aneurysm 'cat /tmp/.jabber-unread-derf'|;
-	}
-	else {
-		$unread = fromfile('/tmp/.jabber-unread-derf');
 	}
 	if ($unread > 0) {
 		$buf .= "J$unread";
@@ -152,21 +127,6 @@ sub print_jabber {
 sub print_eee_fan {
 	my $speed = fromfile('/sys/devices/virtual/hwmon/hwmon0/fan1_input');
 	$buf .= "fan:$speed";
-	return;
-}
-
-sub aneurysm_print_thermal {
-	my $prefix = '/sys/class/i2c-adapter/i2c-0/0-002d';
-	my $fan = '/sys/devices/platform/smsc47m1.1664/fan1_input';
-	return unless (-d $prefix and -r $fan);
-
-	$buf .= sprintf(
-		'fan:%d  chip:%d  cpu:%d  sys:%d',
-		fromfile($fan),
-		fromfile("$prefix/temp1_input")/1000,
-		fromfile("$prefix/temp2_input")/1000,
-		fromfile("$prefix/temp3_input")/1000,
-	);
 	return;
 }
 
@@ -369,10 +329,6 @@ do {
 		space;
 		print_eee_thermal;
 	}
-	if ($hostname eq 'aneurysm') {
-		space;
-		aneurysm_print_thermal;
-	}
 
 	if ($config->{hddtemp}) {
 		foreach(@disks) {
@@ -390,29 +346,15 @@ do {
 		print_battery($_);
 	}
 
-	if (-d "$ENV{HOME}/Maildir/new" or -e SSH_INT or -e SSH_EXT) {
-		space;
+	if (-e SSH_INT or -e SSH_EXT) {
 		print_mail;
-	}
-	if (-r "/tmp/.jabber-unread-$>" or -e SSH_INT or -e SSH_EXT) {
 		print_jabber;
 		space;
 	}
-	if ($loop == LOOP_DWM) {
-		$buf .= strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]});
-	}
-	if ($loop ~~ [LOOP_NONE, LOOP_SCREEN]) {
-		print "$buf\n";
-	}
-	elsif ($loop == LOOP_TMUX) {
-		system('tmux', 'set-option', 'status-right', $buf);
-		system('tmux', 'set-option', 'status-left', strftime('%Y-%m-%d %H:%M ', @{[localtime(time)]}));
-	}
-	elsif ($loop == LOOP_DWM) {
-		system('xsetroot', '-name', $buf);
-	}
-	if ($loop != LOOP_NONE) {
-		sleep($interval{current});
-	}
+	$buf .= strftime('%Y-%m-%d %H:%M', @{[localtime(time)]});
+
+	system('xsetroot', '-name', $buf);
+	sleep($interval{current});
+
 	$buf = '';
-} while($loop);
+} while(1);

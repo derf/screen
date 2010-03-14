@@ -1,6 +1,0 @@
-## vim:ft=perl
-{
-meminfo => 1,
-hddtemp => 0,
-np => 0,
-}
