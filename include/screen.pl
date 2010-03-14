@@ -219,7 +219,7 @@ sub print_battery {
 	given($info{charging_state}) {
 		when('discharging') {
 			$buf .= sprintf(
-				' ↓ %.f%%  %02d:%02.fh remaining',
+				' ▿ %.f%%  %02d:%02.fh remaining',
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
 				($info{remaining_capacity} * 60 / $info{present_rate}) % 60,
@@ -227,7 +227,7 @@ sub print_battery {
 		}
 		when('charging') {
 			$buf .= sprintf(
-				' ↑ %.f%%  %02d:%02.fh remaining',
+				' ▵ %.f%%  %02d:%02.fh remaining',
 				$capacity,
 				($info{last_full_capacity} - $info{remaining_capacity}) / $info{present_rate},
 				(($info{last_full_capacity} - $info{remaining_capacity}) * 60 / $info{present_rate}) % 60,
@@ -235,7 +235,7 @@ sub print_battery {
 		}
 		when('full') {
 			$buf .= sprintf(
-				' → %.f%%  %.f%% health',
+				' = %.f%%  %.f%% health',
 				$capacity,
 				$health,
 			);
