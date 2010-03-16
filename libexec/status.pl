@@ -339,6 +339,7 @@ do {
 	}
 
 	if ($config->{interfaces}) {
+		space;
 		print_interfaces;
 	}
 
@@ -348,10 +349,11 @@ do {
 	}
 
 	if (-e SSH_INT or -e SSH_EXT) {
+		space;
 		print_mail;
 		print_jabber;
-		space;
 	}
+	space;
 	$buf .= strftime('%Y-%m-%d %H:%M', @{[localtime(time)]});
 
 	system('xsetroot', '-name', $buf);
