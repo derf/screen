@@ -7,10 +7,6 @@ use strict;
 use utf8;
 use warnings;
 use Date::Format;
-use constant {
-	SSH_INT => '/tmp/ssh-aneurysm-22-derf',
-	SSH_EXT => '/tmp/ssh-derf.homelinux.org-22-derf',
-};
 
 my $buf;
 my $hostname;
@@ -20,7 +16,6 @@ my @maildirs;
 my $mailpre = "$ENV{HOME}/Maildir";
 my $config;
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
-my $ssh_command = 'ssh -o ConnectTimeout=2';
 my $on_battery = 0;
 my %interval = (
 	current => 10,
@@ -95,34 +90,37 @@ sub short_bytes {
 	return sprintf('%d%s', $bytes, $post[0]);
 }
 
-sub print_mail {
+sub print_aneurysm {
 	my $space = 0;
+	my $unread = 0;
+	my $icq = 0;
+	my $ssh_command = 'ssh -o ConnectTimeout=2';
 
-	if (-e SSH_INT or -e SSH_EXT) {
-		my $raw = qx|$ssh_command aneurysm 'for i (\$(cat Maildir/maildirs)) {
-			[[ -n \$(echo Maildir/\$i/new/*(N)) ]] && echo \$i; true }'|;
+	my $raw = qx|$ssh_command aneurysm 'for i (\$(cat Maildir/maildirs)) {
+		[[ -n \$(echo Maildir/\$i/new/*(N)) ]] && echo \$i; true }'|;
 
-		if ($? >> 8) {
-			$raw = 'error';
-		}
-
-		if (length($raw)) {
-			space;
-			$buf .= 'mail:' . join(' ', split(/\n/, $raw));
-		}
-		return;
+	if ($? >> 8) {
+		$raw = 'error';
 	}
-}
 
-sub print_jabber {
-	my $unread;
-	if (-e SSH_INT or -e SSH_EXT) {
-		$unread = qx|$ssh_command aneurysm 'cat /tmp/.jabber-unread-derf'|;
+	if (length($raw)) {
+		$buf .= '{' . join(' ', split(/\n/, $raw)) . '}';
+		$space = 1;
 	}
+	
+	$unread = qx|$ssh_command aneurysm 'cat /tmp/.jabber-unread-derf'|;
+
 	if ($unread > 0) {
-		$buf .= "J$unread";
+		space if $space;
+		$buf .= 'Jabber';
 	}
-	return;
+
+	$icq = qx|$ssh_command aneurysm 'wc -l < .ysm/afk-log'|;
+
+	if ($icq > 0 ) {
+		space if $space;
+		$buf .= 'ICQ';
+	}
 }
 
 sub print_eee_fan {
@@ -348,10 +346,9 @@ do {
 		print_battery($_);
 	}
 
-	if (-e SSH_INT or -e SSH_EXT) {
+	if (-e '/tmp/ssh-derf.homelinux.org-22-derf') {
 		space;
-		print_mail;
-		print_jabber;
+		print_aneurysm;
 	}
 	space;
 	$buf .= strftime('%Y-%m-%d %H:%M', @{[localtime(time)]});
