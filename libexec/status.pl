@@ -346,7 +346,6 @@ do {
 	}
 
 	if ($config->{interfaces}) {
-		space;
 		print_interfaces;
 	}
 
