@@ -2,10 +2,15 @@
 ## Copyright © 2008-2010 by Daniel Friesel <derf@derf.homelinux.org>
 ## License: WTFPL <http://sam.zoy.org/wtfpl>
 ## used in various status bars
-use feature 'switch';
+use 5.010;
 use strict;
 use utf8;
 use warnings;
+
+use constant {
+	BATTERY_DOTS => 5
+};
+
 use Date::Format;
 
 my $buf;
@@ -152,7 +157,7 @@ sub print_battery {
 	$info{charging_state} = lc(fromfile("$prefix/status"));
 	$info{present_rate} = fromfile("$prefix/current_now")/1000;
 	$info{present} = fromfile("$prefix/present");
-	$buf .= lc($bat);
+
 	if ($info{present} == 0) {
 		return;
 	}
@@ -166,6 +171,10 @@ sub print_battery {
 
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health = $info{last_full_capacity} * 100 / $info{design_capacity};
+
+	my $dots = sprintf('%1.f', $capacity / (100 / BATTERY_DOTS));
+
+	$buf .= '[' . '=' x $dots . ' ' x (BATTERY_DOTS - $dots) . ']';
 
 	if ($info{charging_state} eq 'discharging') {
 		$interval{current} = $interval{battery};
