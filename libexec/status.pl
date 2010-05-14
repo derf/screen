@@ -109,6 +109,7 @@ sub print_aneurysm {
 	}
 
 	if (length($raw)) {
+		space;
 		$buf .= '{' . join(' ', split(/\n/, $raw)) . '}';
 		$space = 1;
 	}
@@ -118,6 +119,7 @@ sub print_aneurysm {
 	if ($unread > 0) {
 		space if $space;
 		$buf .= 'Jabber';
+		$space = 1;
 	}
 
 	$icq = qx|$ssh_command aneurysm 'wc -l < .ysm/afk-log'|;
@@ -355,7 +357,6 @@ do {
 	}
 
 	if (-e '/tmp/ssh-derf.homelinux.org-22-derf') {
-		space;
 		print_aneurysm;
 	}
 	space;
