@@ -267,7 +267,7 @@ sub print_hddtemp {
 		return;
 	}
 	chomp(my $temp = qx{$hddtemp -n /dev/$disk});
-	if (length($temp) == 0) {
+	if (length($temp) == 0 or $temp !~ /^ \d+ $/x) {
 		$temp = '-';
 	}
 	$buf .= "$disk:$temp";
