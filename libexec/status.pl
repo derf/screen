@@ -131,13 +131,13 @@ sub print_aneurysm {
 }
 
 sub print_eee_fan {
-	my $speed = fromfile('/sys/devices/virtual/hwmon/hwmon0/fan1_input');
+	my $speed = fromfile('/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input');
 	$buf .= "fan:$speed";
 	return;
 }
 
 sub print_eee_thermal {
-	my $prefix = '/sys/devices/virtual/hwmon/hwmon1';
+	my $prefix = '/sys/class/hwmon/hwmon0';
 	if (not -e "$prefix/temp1_input") {
 		return;
 	}
