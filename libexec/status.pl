@@ -96,9 +96,9 @@ sub short_bytes {
 }
 
 sub print_aneurysm {
-	my $space = 0;
 	my $unread = 0;
 	my $icq = 0;
+	my $icinga = q{};
 	my $ssh_command = 'ssh -o ConnectTimeout=2';
 
 	my $raw = qx|$ssh_command aneurysm 'for i (\$(cat Maildir/maildirs)) {
@@ -111,22 +111,28 @@ sub print_aneurysm {
 	if (length($raw)) {
 		space;
 		$buf .= '{' . join(' ', split(/\n/, $raw)) . '}';
-		$space = 1;
 	}
 	
 	$unread = qx|$ssh_command aneurysm 'cat /tmp/.jabber-unread-derf'|;
 
 	if ($unread > 0) {
-		space if $space;
+		space;
 		$buf .= 'Jabber';
-		$space = 1;
 	}
 
 	$icq = qx|$ssh_command aneurysm 'wc -l < .ysm/afk-log'|;
 
 	if ($icq > 0 ) {
-		space if $space;
+		space;
 		$buf .= 'ICQ';
+	}
+
+	$icinga = qx|$ssh_command aneurysm '/usr/sbin/icingastats -md NUMSVCPROB,NUMHSTPROB'|;
+	my ($service, $host) = split(/\n/, $icinga);
+
+	if ($service or $host) {
+		space;
+		$buf .= "nagios[srv ${service}  host ${host}]";
 	}
 }
 
