@@ -22,6 +22,7 @@ my $mailpre = "$ENV{HOME}/Maildir";
 my $config;
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my $on_battery = 0;
+my $on_umts = 0;
 my %interval = (
 	current => 10,
 	ac      => 10,
@@ -294,6 +295,9 @@ sub print_interfaces {
 		open(my $ifstate, '<', "$ifpre/$device/operstate") or next;
 		if (<$ifstate> eq "up\n" or $device ~~ ['ppp0', 'pegasus']) {
 			push(@updevices, $device);
+			if ($device eq 'ppp0') {
+				$on_umts = 1;
+			}
 		}
 		close($ifstate);
 	}
@@ -332,7 +336,7 @@ if (-u '/usr/sbin/hddtemp' and opendir(my $diskdir, '/sys/block')) {
 
 do {
 	update_battery;
-	if (!$on_battery and $config->{np}) {
+	if (not $on_battery and $config->{np}) {
 		print_np;
 		space;
 	}
@@ -347,9 +351,9 @@ do {
 	}
 
 	if ($config->{hddtemp}) {
-		foreach(@disks) {
+		foreach my $disk (@disks) {
 			space;
-			print_hddtemp($_);
+			print_hddtemp($disk);
 		}
 	}
 
@@ -362,7 +366,7 @@ do {
 		print_battery($_);
 	}
 
-	if (-e '/tmp/ssh-derf.homelinux.org-22-derf') {
+	if (-e '/tmp/ssh-derf.homelinux.org-22-derf' and not $on_umts) {
 		print_aneurysm;
 	}
 	space;
@@ -371,5 +375,5 @@ do {
 	system('xsetroot', '-name', $buf);
 	sleep($interval{current});
 
-	$buf = '';
+	$buf = q{};
 } while(1);
