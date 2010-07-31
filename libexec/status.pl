@@ -127,14 +127,6 @@ sub print_aneurysm {
 		space;
 		$buf .= 'ICQ';
 	}
-
-	$icinga = qx|$ssh_command aneurysm '/usr/sbin/icingastats -md NUMSVCPROB,NUMHSTPROB'|;
-	my ($service, $host) = split(/\n/, $icinga);
-
-	if ($service or $host) {
-		space;
-		$buf .= "nagios[srv ${service}  host ${host}]";
-	}
 }
 
 sub print_eee_fan {
