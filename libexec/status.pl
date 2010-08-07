@@ -277,7 +277,7 @@ sub print_interfaces {
 	my @devices;
 	my @updevices;
 	my $ifpre = '/sys/class/net';
-	my $essid;
+	my %wlan;
 
 	opendir(my $ifdir, $ifpre) or return;
 	@devices = grep { ! /^\./ } readdir($ifdir);
@@ -295,19 +295,44 @@ sub print_interfaces {
 	}
 
 	foreach my $device (@updevices) {
-		if ($device eq 'ra0') {
-			$essid = qx{/sbin/iwgetid ra0 --raw};
-			chomp $essid;
+		if ($device eq 'wlan0') {
+			foreach my $line (split(/\n/, qx{/sbin/wpa_cli -i wlan0 status})) {
+				my ($key, $value) = split(/=/, $line);
+				$wlan{$key} = $value;
+			}
 		}
 	}
 
 	foreach my $device (@updevices) {
+		my $extra = q{};
 		space;
+
+		if ($device eq 'wlan0') {
+			given ($wlan{'wpa_state'}) {
+				when ('SCANNING') {
+					$extra = '<>';
+				}
+				when ('ASSOCIATING') {
+					$extra = '{}';
+				}
+				when ('COMPLETED') {
+					$extra = sprintf(
+						'[%s]',
+						$wlan{'ssid'}
+					);
+				}
+				default {
+					$extra = '(?)';
+				}
+			}
+		}
+
 		$buf .= sprintf(
-			'%s: %s',
-			(($device eq 'ra0' and defined($essid)) ? "$device\[$essid]" : $device),
+			'%s%s: %s',
+			$device,
+			$extra,
 			short_bytes(fromfile("$ifpre/$device/statistics/rx_bytes")
-			+ fromfile("$ifpre/$device/statistics/tx_bytes")),
+				+ fromfile("$ifpre/$device/statistics/tx_bytes")),
 		);
 	}
 	return;
