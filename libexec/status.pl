@@ -310,10 +310,10 @@ sub print_interfaces {
 		if ($device eq 'wlan0') {
 			given ($wlan{'wpa_state'}) {
 				when ('SCANNING') {
-					$extra = '<>';
+					$extra = '(scan)';
 				}
 				when ('ASSOCIATING') {
-					$extra = '{}';
+					$extra = '(assoc)';
 				}
 				when ('COMPLETED') {
 					$extra = sprintf(
