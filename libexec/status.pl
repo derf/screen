@@ -19,7 +19,6 @@ my @battery;
 my @disks;
 my @maildirs;
 my $mailpre = "$ENV{HOME}/Maildir";
-my $config;
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my $on_battery = 0;
 my $on_umts = 0;
@@ -43,14 +42,6 @@ if (-r "$mailpre/maildirs") {
 	}
 
 	close($mailfh);
-}
-
-if (-r "$confdir/$hostname") {
-	if (not ($config = do("$confdir/$hostname"))) {
-		if ($@)                  {warn "couldn't parse config: $@"}
-		if (not defined $config) {warn "couldn't do config: $!"}
-		if (not $config)         {warn 'couldn\'t run config'}
-	}
 }
 
 sub space {
@@ -353,13 +344,11 @@ if (-u '/usr/sbin/hddtemp' and opendir(my $diskdir, '/sys/block')) {
 
 do {
 	update_battery;
-	if (not $on_battery and $config->{np}) {
+	if (not $on_battery ) {
 		print_np;
 		space;
 	}
-	if ($config->{meminfo}) {
-		print_meminfo;
-	}
+	print_meminfo;
 	if (-d '/sys/devices/virtual/hwmon/hwmon0') {
 		space;
 		print_eee_fan;
@@ -367,16 +356,12 @@ do {
 		print_eee_thermal;
 	}
 
-	if ($config->{hddtemp}) {
-		foreach my $disk (@disks) {
-			space;
-			print_hddtemp($disk);
-		}
+	foreach my $disk (@disks) {
+		space;
+		print_hddtemp($disk);
 	}
 
-	if ($config->{interfaces}) {
-		print_interfaces;
-	}
+	print_interfaces;
 
 	foreach (@battery) {
 		space;
