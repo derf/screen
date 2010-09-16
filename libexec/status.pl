@@ -100,6 +100,8 @@ sub print_aneurysm {
 		$raw = 'error';
 	}
 
+	$raw =~ s/ ^ \. (?= . ) //gmx;
+
 	if (length($raw)) {
 		space;
 		$buf .= '{' . join(' ', split(/\n/, $raw)) . '}';
@@ -211,7 +213,7 @@ sub print_battery {
 }
 
 sub print_np {
-	my $np = qx{/home/derf/bin/envify mpc -qf '[[%artist% - ]%title%]|[%file%]' current};
+	my $np = qx{envify mpc -qf '[[%artist% - ]%title%]|[%file%]' current};
 	if (length($np)) {
 		$np =~ s/\n//s;
 		$buf .= $np;
