@@ -22,6 +22,7 @@ my $mailpre = "$ENV{HOME}/Maildir";
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my $on_battery = 0;
 my $on_umts = 0;
+my $counter = 0;
 my %interval = (
 	current => 10,
 	ac      => 10,
@@ -258,7 +259,7 @@ sub print_hddtemp {
 	if (not -u $hddtemp) {
 		return;
 	}
-	chomp(my $temp = qx{$hddtemp -n /dev/$disk});
+	chomp(my $temp = qx{$hddtemp -n SATA:/dev/$disk});
 	if (length($temp) == 0 or $temp !~ /^ \d+ $/x) {
 		$temp = '-';
 	}
@@ -331,20 +332,29 @@ sub print_interfaces {
 	return;
 }
 
-if (-u '/usr/sbin/hddtemp' and opendir(my $diskdir, '/sys/block')) {
-	foreach my $disk (readdir($diskdir)) {
-		if ($disk !~ / ^ [hs] d [a-z] $/x) {
-			next;
+sub scan_for_disks {
+	@disks = ();
+
+	if (-u '/usr/sbin/hddtemp' and opendir(my $diskdir, '/sys/block')) {
+		foreach my $disk (readdir($diskdir)) {
+			if ($disk !~ / ^ sd [a-z] $/x) {
+				next;
+			}
+			my $cap = fromfile("/sys/block/$disk/capability");
+			if ($cap ~~ [10, 12, 50, 52]) {
+				push(@disks, $disk);
+			}
 		}
-		my $cap = fromfile("/sys/block/$disk/capability");
-		if ($cap ~~ [10, 12, 50, 52]) {
-			push(@disks, $disk);
-		}
+		closedir($diskdir);
 	}
-	closedir($diskdir);
 }
 
 do {
+
+	if (($counter % 10) == 0) {
+		scan_for_disks();
+	}
+
 	update_battery;
 	if (not $on_battery ) {
 		print_np;
@@ -380,4 +390,9 @@ do {
 	sleep($interval{current});
 
 	$buf = q{};
+
+	if ($counter++ == 100) {
+		$counter = 0;
+	}
+
 } while(1);
