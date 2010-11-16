@@ -23,12 +23,18 @@ my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my $on_battery = 0;
 my $on_umts = 0;
 my $counter = 0;
+my $debug = 0;
 my %interval = (
-	current => 10,
-	ac      => 10,
-	battery => 20,
+	current => 1,
+	ac      => 1,
+	battery => 2,
 );
+my %line;
 local $|=1;
+
+if ($ARGV[0] and ($ARGV[0] eq '-d')) {
+	$debug = 1;
+}
 
 open(my $hostfh, '<', '/etc/hostname') or die("Cannot open /etc/hostname: $!");
 chomp($hostname = <$hostfh>);
@@ -45,9 +51,19 @@ if (-r "$mailpre/maildirs") {
 	close($mailfh);
 }
 
-sub space {
-	$buf .= '   ';
-	return;
+sub count {
+	my ($count) = @_;
+	return (
+		($counter == 0)
+		or (($counter % $count) == 0)
+	);
+}
+
+sub debug {
+	my ($msg) = @_;
+	if ($debug) {
+		say $msg;
+	}
 }
 
 sub update_battery {
@@ -94,6 +110,8 @@ sub print_aneurysm {
 	my $icinga = q{};
 	my $ssh_command = 'ssh -o ConnectTimeout=2';
 
+	debug('print_aneurysm');
+
 	my $raw = qx|$ssh_command aneurysm 'for i (\$(cat Maildir/maildirs)) {
 		[[ -n \$(echo Maildir/\$i/new/*(N)) ]] && echo \$i; true }'|;
 
@@ -104,37 +122,45 @@ sub print_aneurysm {
 	$raw =~ s/ ^ \. (?= . ) //gmx;
 
 	if (length($raw)) {
-		space;
-		$buf .= '{' . join(' ', split(/\n/, $raw)) . '}';
+		$line{'mail'} = '{' . join(' ', split(/\n/, $raw)) . '}';
+	}
+	else {
+		$line{'mail'} = undef;
 	}
 	
 	$unread = qx|$ssh_command aneurysm 'cat /tmp/.jabber-unread-derf'|;
 
 	if ($unread > 0) {
-		space;
-		$buf .= 'Jabber';
+		$line{'jabber'} = 'Jabber';
+	}
+	else {
+		$line{'jabber'} = undef;
 	}
 
 	$icq = qx|$ssh_command aneurysm 'wc -l < .ysm/afk-log'|;
 
 	if ($icq > 0 ) {
-		space;
-		$buf .= 'ICQ';
+		$line{'icq'} = 'ICQ';
+	}
+	else {
+		$line{'icq'} = undef;
 	}
 }
 
 sub print_eee_fan {
+	debug('eee_fan');
 	my $speed = fromfile('/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input');
-	$buf .= "fan:$speed";
+	$line{'fan'} = "fan:${speed}";
 	return;
 }
 
 sub print_eee_thermal {
 	my $prefix = '/sys/class/hwmon/hwmon0';
+	debug('eee_thermal');
 	if (not -e "$prefix/temp1_input") {
 		return;
 	}
-	$buf .= sprintf(
+	$line{'thermal'} = sprintf(
 		'cpu:%d',
 		fromfile("$prefix/temp1_input")/1000,
 	);
@@ -153,6 +179,8 @@ sub print_battery {
 	$info{present_rate} = fromfile("$prefix/current_now")/1000;
 	$info{present} = fromfile("$prefix/present");
 
+	debug('battery');
+
 	if ($info{present} == 0) {
 		return;
 	}
@@ -169,7 +197,7 @@ sub print_battery {
 
 	my $dots = sprintf('%1.f', $capacity / (100 / BATTERY_DOTS));
 
-	$buf .= '[' . '=' x $dots . ' ' x (BATTERY_DOTS - $dots) . ']';
+	$line{'bat'} = '[' . '=' x $dots . ' ' x (BATTERY_DOTS - $dots) . ']';
 
 	if ($info{charging_state} eq 'discharging') {
 		$interval{current} = $interval{battery};
@@ -181,7 +209,7 @@ sub print_battery {
 
 	given($info{charging_state}) {
 		when('discharging') {
-			$buf .= sprintf(
+			$line{'bat'} .= sprintf(
 				' ▿ %.f%%  %02d:%02.fh',
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
@@ -189,7 +217,7 @@ sub print_battery {
 			);
 		}
 		when('charging') {
-			$buf .= sprintf(
+			$line{'bat'} .= sprintf(
 				' ▵ %.f%%  %02d:%02.fh',
 				$capacity,
 				($info{last_full_capacity} - $info{remaining_capacity}) / $info{present_rate},
@@ -197,14 +225,14 @@ sub print_battery {
 			);
 		}
 		when('full') {
-			$buf .= sprintf(
+			$line{'bat'} .= sprintf(
 				' = %.f%%  (%.f%%)',
 				$capacity,
 				$health,
 			);
 		}
 		default {
-			$buf .= sprintf(
+			$line{'bat'} .= sprintf(
 				' ? %.f%%',
 				$capacity,
 			);
@@ -214,10 +242,16 @@ sub print_battery {
 }
 
 sub print_np {
+
+	debug('np');
+
 	my $np = qx{envify mpc -qf '[[%artist% - ]%title%]|[%file%]' current};
 	if (length($np)) {
 		$np =~ s/\n//s;
-		$buf .= $np;
+		$line{'np'} = $np;
+	}
+	else {
+		$line{'np'} = undef;
 	}
 	return;
 }
@@ -225,6 +259,9 @@ sub print_np {
 sub print_meminfo {
 	my ($mem, $memfree);
 	my ($swap, $swapfree);
+
+	debug('meminfo');
+
 	foreach my $line (split(/\n/, fromfile('/proc/meminfo'))) {
 		$line =~ / ^ (?<key> [^:]+ ): \s* (?<value> \d+ ) \s kB $ /x or next;
 		given($+{key}) {
@@ -240,12 +277,12 @@ sub print_meminfo {
 		$_ /= 1024;
 		$_ = int($_);
 	}
-	$buf .= sprintf(
+	$line{'mem'} = sprintf(
 		'mem:%d',
 		$mem - $memfree,
 	);
 	if ($swap > 0) {
-		$buf .= sprintf(
+		$line{'mem'} .= sprintf(
 			' swap:%d',
 			$swap - $swapfree,
 		);
@@ -256,6 +293,9 @@ sub print_meminfo {
 sub print_hddtemp {
 	my $disk = shift;
 	my $hddtemp = '/usr/sbin/hddtemp';
+
+	debug('hddtemp');
+
 	if (not -u $hddtemp) {
 		return;
 	}
@@ -263,7 +303,7 @@ sub print_hddtemp {
 	if (length($temp) == 0 or $temp !~ /^ \d+ $/x) {
 		$temp = '-';
 	}
-	$buf .= "$disk:$temp";
+	$line{'hddtemp'} .= "$disk:$temp";
 	return;
 }
 
@@ -272,6 +312,8 @@ sub print_interfaces {
 	my @updevices;
 	my $ifpre = '/sys/class/net';
 	my %wlan;
+
+	debug('interfaces');
 
 	opendir(my $ifdir, $ifpre) or return;
 	@devices = grep { ! /^\./ } readdir($ifdir);
@@ -297,9 +339,10 @@ sub print_interfaces {
 		}
 	}
 
+	$line{'net'} = undef;
+
 	foreach my $device (@updevices) {
 		my $extra = q{};
-		space;
 
 		if ($device eq 'wlan0') {
 			given ($wlan{'wpa_state'}) {
@@ -321,7 +364,7 @@ sub print_interfaces {
 			}
 		}
 
-		$buf .= sprintf(
+		$line{'net'} .= sprintf(
 			'%s%s: %s',
 			$device,
 			$extra,
@@ -349,50 +392,72 @@ sub scan_for_disks {
 	}
 }
 
-do {
+while (sleep($interval{'current'})) {
 
-	if (($counter % 10) == 0) {
+	debug("\ntick");
+
+	if (count(60)) {
 		scan_for_disks();
 	}
 
-	update_battery;
-	if (not $on_battery ) {
-		print_np;
-		space;
+	if (count(5)) {
+		update_battery;
 	}
-	print_meminfo;
-	if (-d '/sys/devices/virtual/hwmon/hwmon0') {
-		space;
+
+	if (count(10) and not $on_battery) {
+		print_np;
+	}
+
+	if (count(2)) {
+		print_meminfo;
+	}
+	if (count(5) and -d '/sys/devices/virtual/hwmon/hwmon0') {
 		print_eee_fan;
-		space;
 		print_eee_thermal;
 	}
 
-	foreach my $disk (@disks) {
-		space;
-		print_hddtemp($disk);
+	if (count(20)) {
+		$line{'hddtemp'} = q{};
+		foreach my $disk (@disks) {
+			print_hddtemp($disk);
+		}
+		
 	}
 
-	print_interfaces;
-
-	foreach (@battery) {
-		space;
-		print_battery($_);
+	if (count(2)) {
+		print_interfaces;
 	}
 
-	if (-e '/tmp/ssh-derf.homelinux.org-22-derf' and not $on_umts) {
+	if (count(5)) {
+		foreach (@battery) {
+			print_battery($_);
+		}
+	}
+
+	if (count(10) and -e '/tmp/ssh-derf.homelinux.org-22-derf' and not $on_umts) {
 		print_aneurysm;
 	}
-	space;
-	$buf .= strftime('%Y-%m-%d %H:%M', @{[localtime(time)]});
+	$line{'date'} = strftime('%Y-%m-%d %H:%M', @{[localtime(time)]});
+
+	$buf = q{};
+	for my $element (
+			@line{'np', 'mem', 'fan', 'thermal', 'hddtemp', 'net', 'bat',
+			'mail', 'jabber', 'icq'}
+		)
+	{
+		if (defined $element) {
+			$buf .= "${element}    ";
+		}
+	}
+	
+	$buf .= $line{'date'};
 
 	system('xsetroot', '-name', $buf);
 	sleep($interval{current});
 
-	$buf = q{};
-
-	if ($counter++ == 100) {
+	if ($counter++ == 600) {
 		$counter = 0;
+		%line = undef;
 	}
 
-} while(1);
+};
