@@ -446,7 +446,7 @@ while (sleep($interval{'current'})) {
 		)
 	{
 		if (defined $element) {
-			$buf .= "${element}    ";
+			$buf .= "${element}   ";
 		}
 	}
 	
