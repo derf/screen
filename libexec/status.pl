@@ -392,7 +392,7 @@ sub scan_for_disks {
 	}
 }
 
-while (sleep($interval{'current'})) {
+while (1) {
 
 	debug("\ntick");
 
@@ -460,4 +460,5 @@ while (sleep($interval{'current'})) {
 		%line = undef;
 	}
 
-};
+	sleep($interval{'current'});
+}
