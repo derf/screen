@@ -8,7 +8,8 @@ use utf8;
 use warnings;
 
 use constant {
-	BATTERY_DOTS => 5
+	BATTERY_DOTS => 5,
+	WLAN_DOTS => 5
 };
 
 use Date::Format;
@@ -332,10 +333,9 @@ sub print_interfaces {
 
 	foreach my $device (@updevices) {
 		if ($device eq 'wlan0') {
-			foreach my $line (split(/\n/, qx{/sbin/wpa_cli -i wlan0 status})) {
-				my ($key, $value) = split(/=/, $line);
-				$wlan{$key} = $value;
-			}
+			my $line = (split(/\n/, fromfile('/proc/self/net/wireless')))[-1];
+			$line =~ m/ ^ \s* wlan0: \s+ \d+ \s+ (?<ll>\d+) /x;
+			$wlan{'link'} = $+{'ll'};
 		}
 	}
 
@@ -345,23 +345,8 @@ sub print_interfaces {
 		my $extra = q{};
 
 		if ($device eq 'wlan0') {
-			given ($wlan{'wpa_state'}) {
-				when ('SCANNING') {
-					$extra = '(scan)';
-				}
-				when ('ASSOCIATING') {
-					$extra = '(assoc)';
-				}
-				when ('COMPLETED') {
-					$extra = sprintf(
-						'[%s]',
-						$wlan{'ssid'}
-					);
-				}
-				default {
-					$extra = '(?)';
-				}
-			}
+			my $dots = sprintf('%1.f', $wlan{'link'} / (100 / WLAN_DOTS));
+			$extra = '[' . '=' x $dots . ' ' x (WLAN_DOTS - $dots) . ']';
 		}
 
 		$line{'net'} .= sprintf(
