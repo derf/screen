@@ -7,11 +7,6 @@ use strict;
 use utf8;
 use warnings;
 
-use constant {
-	BATTERY_DOTS => 5,
-	WLAN_DOTS => 5
-};
-
 use Date::Format;
 
 my $buf;
@@ -65,6 +60,29 @@ sub debug {
 	if ($debug) {
 		say $msg;
 	}
+}
+
+sub bar {
+	my ($percent) = @_;
+	my $max_dots = 5;
+	my $ret = '[';
+	my $dots = $percent / (100 / $max_dots);
+
+	$ret .= '=' x int($dots);
+
+	if ($percent != 100) {
+		given ($dots - int($dots)) {
+			when ($_ < 0.25) { $ret .= ' ' }
+			when ($_ < 0.75) { $ret .= '-' }
+			default          { $ret .= '=' }
+		}
+	}
+
+	$ret .= ' ' x ($max_dots - int($dots) - 1);
+
+	$ret .= ']';
+
+	return $ret;
 }
 
 sub update_battery {
@@ -196,9 +214,7 @@ sub print_battery {
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health = $info{last_full_capacity} * 100 / $info{design_capacity};
 
-	my $dots = sprintf('%1.f', $capacity / (100 / BATTERY_DOTS));
-
-	$line{'bat'} = '[' . '=' x $dots . ' ' x (BATTERY_DOTS - $dots) . ']';
+	$line{'bat'} = bar($capacity);
 
 	if ($info{charging_state} eq 'discharging') {
 		$interval{current} = $interval{battery};
@@ -345,8 +361,7 @@ sub print_interfaces {
 		my $extra = q{};
 
 		if ($device eq 'wlan0') {
-			my $dots = sprintf('%1.f', $wlan{'link'} / (100 / WLAN_DOTS));
-			$extra = '[' . '=' x $dots . ' ' x (WLAN_DOTS - $dots) . ']';
+			$extra = bar($wlan{'link'});
 		}
 
 		$line{'net'} .= sprintf(
