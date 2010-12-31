@@ -127,7 +127,7 @@ sub print_aneurysm {
 	my $unread = 0;
 	my $icq = 0;
 	my $icinga = q{};
-	my $ssh_command = 'ssh -o ConnectTimeout=2';
+	my $ssh_command = 'ssh -o ConnectTimeout=2 -o ServerAliveInterval=5 -o ServerAliveCountMax=2';
 
 	debug('print_aneurysm');
 
