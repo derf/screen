@@ -13,7 +13,6 @@ my $buf;
 my $hostname;
 my @battery;
 my @disks;
-my @maildirs;
 my $mailpre = "$ENV{HOME}/Maildir";
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my $on_battery = 0;
@@ -35,17 +34,6 @@ if ($ARGV[0] and ($ARGV[0] eq '-d')) {
 open(my $hostfh, '<', '/etc/hostname') or die("Cannot open /etc/hostname: $!");
 chomp($hostname = <$hostfh>);
 close($hostfh) or die("Cannot close /etc/hostname: $!");
-
-if (-r "$mailpre/maildirs") {
-	open(my $mailfh, '<', "$mailpre/maildirs") or die("Cannot open $mailpre/maildirs: $!");
-
-	while (my $line = <$mailfh>) {
-		chomp $line;
-		push(@maildirs, $line);
-	}
-
-	close($mailfh);
-}
 
 sub count {
 	my ($count) = @_;
@@ -131,14 +119,13 @@ sub print_aneurysm {
 
 	debug('print_aneurysm');
 
-	my $raw = qx|$ssh_command aneurysm 'for i (\$(cat Maildir/maildirs)) {
-		[[ -n \$(echo Maildir/\$i/new/*(N)) ]] && echo \$i; true }'|;
+	my $raw = qx|$ssh_command aneurysm 'while read md short; do 
+		[[ -n \$(echo Maildir/\$md/new/*(N)) ]] && echo \$short; true;
+		done < Maildir/maildirs'|;
 
 	if ($? >> 8) {
 		$raw = 'error';
 	}
-
-	$raw =~ s/ ^ \. (?= . ) //gmx;
 
 	if (length($raw)) {
 		$line{'mail'} = '{' . join(' ', split(/\n/, $raw)) . '}';
