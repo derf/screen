@@ -93,7 +93,7 @@ sub fromfile {
 	my $content;
 	{
 		local $/ = undef;
-		open(my $fh, '<', $file) or return;
+		open(my $fh, '<', $file) or return q{};
 		$content = <$fh>;
 		close($fh);
 	}
@@ -162,12 +162,25 @@ sub print_eee_fan {
 
 sub print_eee_thermal {
 	my $prefix = '/sys/class/hwmon/hwmon0';
+	my $governor = fromfile('/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor');
+	my $sign = q{:};
+
 	debug('eee_thermal');
 	if (not -e "$prefix/temp1_input") {
 		return;
 	}
+
+	given ($governor) {
+		when ('ondemand')     { $sign = q{|} }
+		when ('conservative') { $sign = q{.} }
+		when ('powersave')    { $sign = q{_} }
+		when ('userspace')    { $sign = q{-} }
+		when ('performance')  { $sign = q{^} }
+	}
+
 	$line{'thermal'} = sprintf(
-		'cpu:%d',
+		'cpu%s%d',
+		$sign,
 		fromfile("$prefix/temp1_input")/1000,
 	);
 	return;
