@@ -11,7 +11,6 @@ use Date::Format;
 
 my $buf;
 my $hostname;
-my @battery;
 my @disks;
 my $mailpre = "$ENV{HOME}/Maildir";
 my $confdir = "$ENV{HOME}/packages/screen/etc/screen.pl";
@@ -71,21 +70,6 @@ sub bar {
 	$ret .= ']';
 
 	return $ret;
-}
-
-sub update_battery {
-	@battery = ();
-	if (-d '/sys/class/power_supply') {
-		opendir(my $powdir, '/sys/class/power_supply');
-		foreach (readdir($powdir)) {
-			if (/ ^ (BAT \d+ ) $ /x) {
-				push(@battery, $1);
-				last;
-			}
-		}
-		closedir($powdir);
-	}
-	return;
 }
 
 sub fromfile {
@@ -187,10 +171,15 @@ sub print_eee_thermal {
 }
 
 sub print_battery {
-	my $bat = shift;
 	my %info;
 	my ($capacity, $health);
-	my $prefix = "/sys/class/power_supply/$bat";
+	my $prefix = '/sys/class/power_supply/BAT0';
+
+	if (not -e $prefix) {
+		delete $line{bat};
+		return;
+	}
+
 	$info{remaining_capacity} = fromfile("$prefix/charge_now")/1000;
 	$info{last_full_capacity} = fromfile("$prefix/charge_full")/1000;
 	$info{design_capacity} = fromfile("$prefix/charge_full_design")/1000;
@@ -400,10 +389,6 @@ while (1) {
 		scan_for_disks();
 	}
 
-	if (count(5)) {
-		update_battery;
-	}
-
 	if (count(10) and not $on_battery) {
 		print_np;
 	}
@@ -429,9 +414,7 @@ while (1) {
 	}
 
 	if (count(5)) {
-		foreach (@battery) {
-			print_battery($_);
-		}
+		print_battery();
 	}
 
 	if (count(10) and -e '/tmp/ssh-derf.homelinux.org-22-derf' and not $on_umts) {
