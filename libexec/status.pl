@@ -280,7 +280,10 @@ sub print_meminfo {
 		$_ /= 1024;
 		$_ = int($_);
 	}
-	$line{'mem'} = sprintf( 'mem:%d', $mem - $memfree, );
+	$line{'mem'} = sprintf( 'mem%s%d',
+		bar( ( $mem - $memfree ) / $mem * 100 ),
+		$mem - $memfree,
+	);
 	if ( $swap > 0 ) {
 		$line{'mem'} .= sprintf( ' swap:%d', $swap - $swapfree, );
 	}
