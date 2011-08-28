@@ -280,8 +280,7 @@ sub print_meminfo {
 		$_ /= 1024;
 		$_ = int($_);
 	}
-	$line{'mem'} = sprintf( 'mem%s%d',
-		bar( ( $mem - $memfree ) / $mem * 100 ),
+	$line{mem} = sprintf( 'mem:%dM',
 		$mem - $memfree,
 	);
 	if ( $swap > 0 ) {
@@ -345,14 +344,14 @@ sub print_interfaces {
 	$line{'net'} = undef;
 
 	foreach my $device (@updevices) {
-		my $extra = q{};
+		my $extra = q{:};
 
 		if ( $device eq 'wlan0' ) {
 			$extra = bar( $wlan{'link'} );
 		}
 
 		$line{'net'} .= sprintf(
-			'%s%s:%s',
+			'%s%s%s',
 			$device, $extra,
 			short_bytes(
 				    fromfile("$ifpre/$device/statistics/rx_bytes")
