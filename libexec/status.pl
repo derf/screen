@@ -362,6 +362,18 @@ sub print_interfaces {
 	return;
 }
 
+# Skyshaper Pulse
+# one day has 1000 pulses of 86.4 seconds each
+sub print_time_pulse {
+	my ($sec, $min, $hour) = gmtime(time);
+
+	my $pulse = (((($hour * 60) + $min ) * 60) + $sec) / 86.4;
+
+	$line{pulse} = sprintf('%d', $pulse);
+
+	return;
+}
+
 sub scan_for_disks {
 	@disks = ();
 
@@ -422,6 +434,7 @@ while (1) {
 		print_aneurysm;
 	}
 	$line{'date'} = strftime( '%Y-%m-%d %H:%M', @{ [ localtime(time) ] } );
+	print_time_pulse();
 
 	$buf = q{};
 	for my $element (
@@ -436,7 +449,7 @@ while (1) {
 		}
 	}
 
-	$buf .= $line{'date'};
+	$buf .= $line{date} . q{ } . $line{pulse};
 
 	system( 'xsetroot', '-name', $buf );
 	sleep( $interval{current} );
