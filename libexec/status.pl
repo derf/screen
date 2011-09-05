@@ -8,6 +8,7 @@ use utf8;
 use warnings;
 
 use Date::Format;
+use POSIX qw(mkfifo);
 
 my $buf;
 my $hostname;
@@ -34,6 +35,9 @@ open( my $hostfh, '<', '/etc/hostname' )
   or die("Cannot open /etc/hostname: $!");
 chomp( $hostname = <$hostfh> );
 close($hostfh) or die("Cannot close /etc/hostname: $!");
+
+mkfifo('/tmp/.derf-notify', 0777);
+open(my $notification_fh, '<', '/tmp/.derf-notify');
 
 sub count {
 	my ($count) = @_;
@@ -394,6 +398,13 @@ sub scan_for_disks {
 while (1) {
 
 	debug("\ntick");
+
+	my $notification = <$notification_fh>;
+	if ($notification) {
+		chomp $notification;
+		system( 'xsetroot', '-name', $notification );
+		sleep(5);
+	}
 
 	if ( count(60) ) {
 		scan_for_disks();
