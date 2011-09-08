@@ -400,7 +400,7 @@ while (1) {
 	debug("\ntick");
 
 	my $notification = <$notification_fh>;
-	if ($notification) {
+	if ($notification and length($notification)) {
 		chomp $notification;
 		system( 'xsetroot', '-name', $notification );
 		sleep(5);
