@@ -5,3 +5,4 @@ if ! [ -r $PIDFILE ]; then
 	echo $! > $PIDFILE
 fi
 
+( sleep 10; uname -a > /tmp/.derf-notify ) &
