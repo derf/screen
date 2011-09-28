@@ -36,8 +36,8 @@ open( my $hostfh, '<', '/etc/hostname' )
 chomp( $hostname = <$hostfh> );
 close($hostfh) or die("Cannot close /etc/hostname: $!");
 
-mkfifo('/tmp/.derf-notify', 0777);
-open(my $notification_fh, '<', '/tmp/.derf-notify');
+mkfifo( '/tmp/.derf-notify', 0777 );
+open( my $notification_fh, '<', '/tmp/.derf-notify' );
 
 sub count {
 	my ($count) = @_;
@@ -122,7 +122,7 @@ sub print_aneurysm {
 sub print_eee_fan {
 	debug('eee_fan');
 
-	if (not -r '/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input') {
+	if ( not -r '/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input' ) {
 		$line{fan} = undef;
 		return;
 	}
@@ -139,7 +139,9 @@ sub print_eee_thermal {
 	my $sign = q{:};
 
 	debug('eee_thermal');
-	if ( not -e "$prefix/temp1_input" or fromfile("${prefix}/name") eq 'acpitz') {
+	if ( not -e "$prefix/temp1_input"
+		or fromfile("${prefix}/name") eq 'acpitz' )
+	{
 		$line{thermal} = undef;
 		return;
 	}
@@ -270,9 +272,7 @@ sub print_meminfo {
 		$_ /= 1024;
 		$_ = int($_);
 	}
-	$line{mem} = sprintf( 'mem:%dM',
-		$mem - $memfree,
-	);
+	$line{mem} = sprintf( 'mem:%dM', $mem - $memfree, );
 	if ( $swap > 0 ) {
 		$line{'mem'} .= sprintf( ' swap:%d', $swap - $swapfree, );
 	}
@@ -341,8 +341,7 @@ sub print_interfaces {
 		}
 
 		$line{'net'} .= sprintf(
-			'%s%s%s',
-			$device, $extra,
+			'%s%s%s', $device, $extra,
 			short_bytes(
 				    fromfile("$ifpre/$device/statistics/rx_bytes")
 				  + fromfile("$ifpre/$device/statistics/tx_bytes")
@@ -355,11 +354,11 @@ sub print_interfaces {
 # Skyshaper Pulse
 # one day has 1000 pulses of 86.4 seconds each
 sub print_time_pulse {
-	my ($sec, $min, $hour) = gmtime(time);
+	my ( $sec, $min, $hour ) = gmtime(time);
 
-	my $pulse = (((($hour * 60) + $min ) * 60) + $sec) / 86.4;
+	my $pulse = ( ( ( ( $hour * 60 ) + $min ) * 60 ) + $sec ) / 86.4;
 
-	$line{pulse} = sprintf('%d', $pulse);
+	$line{pulse} = sprintf( '%d', $pulse );
 
 	return;
 }
@@ -386,7 +385,7 @@ while (1) {
 	debug("\ntick");
 
 	my $notification = <$notification_fh>;
-	if ($notification and length($notification)) {
+	if ( $notification and length($notification) ) {
 		chomp $notification;
 		system( 'xsetroot', '-name', $notification );
 		sleep(5);
