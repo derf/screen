@@ -98,9 +98,6 @@ sub short_bytes {
 }
 
 sub print_aneurysm {
-	my $unread = 0;
-	my $icq    = 0;
-	my $icinga = q{};
 	my $ssh_command
 	  = 'ssh -o ConnectTimeout=2 -o ServerAliveInterval=5 -o ServerAliveCountMax=2';
 
@@ -119,24 +116,6 @@ sub print_aneurysm {
 	}
 	else {
 		$line{'mail'} = undef;
-	}
-
-	$unread = qx|$ssh_command aneurysm 'cat /tmp/.jabber-unread-derf'|;
-
-	if ( $unread > 0 ) {
-		$line{'jabber'} = 'Jabber';
-	}
-	else {
-		$line{'jabber'} = undef;
-	}
-
-	$icq = qx|$ssh_command aneurysm 'wc -l < .ysm/afk-log'|;
-
-	if ( $icq > 0 ) {
-		$line{'icq'} = 'ICQ';
-	}
-	else {
-		$line{'icq'} = undef;
 	}
 }
 
