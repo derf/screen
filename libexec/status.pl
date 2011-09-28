@@ -142,6 +142,12 @@ sub print_aneurysm {
 
 sub print_eee_fan {
 	debug('eee_fan');
+
+	if (not -r '/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input') {
+		$line{fan} = undef;
+		return;
+	}
+
 	my $speed = fromfile('/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input');
 	$line{'fan'} = "fan:${speed}";
 	return;
@@ -154,7 +160,8 @@ sub print_eee_thermal {
 	my $sign = q{:};
 
 	debug('eee_thermal');
-	if ( not -e "$prefix/temp1_input" ) {
+	if ( not -e "$prefix/temp1_input" or fromfile("${prefix}/name") eq 'acpitz') {
+		$line{thermal} = undef;
 		return;
 	}
 
