@@ -119,6 +119,27 @@ sub print_aneurysm {
 	}
 }
 
+sub print_sensors {
+	my $raw = qx|sensors -u|;
+	my $label;
+
+	$line{thermal} = undef;
+
+	for my $line ( split( /\n/, $raw ) ) {
+		if ( $line =~ m{ ^ (?<label> \S+ ) : $ }ox ) {
+			$label = $+{label};
+		}
+		elsif ( $line =~ m{ temp . _input: \s (?<value> \S+ ) $ }ox
+			and $label !~ m{^temp}ox )
+		{
+			if ( $line{thermal} ) {
+				$line{thermal} .= q{ };
+			}
+			$line{thermal} .= sprintf( "%s:%d", $label, $+{value} );
+		}
+	}
+}
+
 sub print_eee_fan {
 	debug('eee_fan');
 
@@ -402,9 +423,13 @@ while (1) {
 	if ( count(2) ) {
 		print_meminfo;
 	}
-	if ( count(5) and -d '/sys/devices/virtual/hwmon/hwmon0' ) {
+	if ( count(5) and $hostname eq 'descent' ) {
 		print_eee_fan;
 		print_eee_thermal;
+	}
+
+	if ( count(5) and $hostname eq 'saviour' ) {
+		print_sensors;
 	}
 
 	if ( count(20) ) {
