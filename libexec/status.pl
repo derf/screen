@@ -160,9 +160,7 @@ sub print_eee_thermal {
 	my $sign = q{:};
 
 	debug('eee_thermal');
-	if ( not -e "$prefix/temp1_input"
-		or fromfile("${prefix}/name") eq 'acpitz' )
-	{
+	if ( not -e "$prefix/temp1_input" ) {
 		$line{thermal} = undef;
 		return;
 	}
