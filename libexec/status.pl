@@ -226,7 +226,7 @@ sub print_battery {
 	given ( $info{charging_state} ) {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
-				' - %.f%% %02d:%02.fh',
+				' ˬ %.f%% %02d:%02.fh',
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
 				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
@@ -234,7 +234,7 @@ sub print_battery {
 		}
 		when ('charging') {
 			$line{'bat'} .= sprintf(
-				' + %.f%% %02d:%02.fh',
+				' ˄ %.f%% %02d:%02.fh',
 				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
 				  / $info{present_rate},
@@ -357,14 +357,14 @@ sub print_interfaces {
 
 		if ( $device eq 'wlan0' ) {
 			$extra = bar( $wlan{'link'} );
+			$device = 'w';
+		}
+		elsif ( $device eq 'lan' ) {
+			$device = 'l';
 		}
 
 		$line{'net'} .= sprintf(
-			'%s%s%s', $device, $extra,
-			short_bytes(
-				    fromfile("$ifpre/$device/statistics/rx_bytes")
-				  + fromfile("$ifpre/$device/statistics/tx_bytes")
-			),
+			'%s%s', $device, $extra
 		);
 	}
 	return;
