@@ -97,6 +97,27 @@ sub short_bytes {
 	return sprintf( '%d%s', $bytes, $post[0] );
 }
 
+sub print_rfkill {
+	my $prefix = '/sys/class/rfkill';
+	opendir( my $dir, $prefix ) or return;
+	my @entries = grep { /^[^.]/ } readdir($dir);
+	my %rfkill;
+	closedir($dir);
+
+	for my $switch (@entries) {
+		if ( fromfile("${prefix}/${switch}/state") == 1 ) {
+			$rfkill{ fromfile("${prefix}/${switch}/name") } = 1;
+		}
+	}
+
+	if ( $rfkill{'eeepc-bluetooth'} and $rfkill{'hci0'} ) {
+		$line{rfkill} = 'bt';
+	}
+	else {
+		$line{rfkill} = undef;
+	}
+}
+
 sub print_aneurysm {
 	my $ssh_command
 	  = 'ssh -o ConnectTimeout=2 -o ServerAliveInterval=5 -o ServerAliveCountMax=2';
@@ -356,16 +377,14 @@ sub print_interfaces {
 		my $extra = q{:};
 
 		if ( $device eq 'wlan0' ) {
-			$extra = bar( $wlan{'link'} );
+			$extra  = bar( $wlan{'link'} );
 			$device = 'w';
 		}
 		elsif ( $device eq 'lan' ) {
 			$device = 'l';
 		}
 
-		$line{'net'} .= sprintf(
-			'%s%s', $device, $extra
-		);
+		$line{'net'} .= sprintf( '%s%s', $device, $extra );
 	}
 	return;
 }
@@ -446,6 +465,10 @@ while (1) {
 		print_battery();
 	}
 
+	if ( count(20) ) {
+		print_rfkill();
+	}
+
 	if (    count(10)
 		and -e '/tmp/ssh-derf.homelinux.org-22-derf'
 		and not $on_umts )
@@ -458,8 +481,8 @@ while (1) {
 	$buf = q{};
 	for my $element (
 		@line{
-			'np',  'mem',  'fan',    'thermal', 'hddtemp', 'net',
-			'bat', 'mail', 'jabber', 'icq'
+			'np',  'mem', 'fan',  'thermal', 'hddtemp', 'rfkill',
+			'net', 'bat', 'mail', 'jabber',  'icq'
 		}
 	  )
 	{
