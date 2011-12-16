@@ -374,7 +374,7 @@ sub print_interfaces {
 	$line{'net'} = undef;
 
 	foreach my $device (@updevices) {
-		my $extra = q{:};
+		my $extra = q{};
 
 		if ( $device eq 'wlan0' ) {
 			$extra  = bar( $wlan{'link'} );
