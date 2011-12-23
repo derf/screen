@@ -52,8 +52,8 @@ sub debug {
 }
 
 sub bar {
-	my ($percent) = @_;
-	my $max_dots  = 5;
+	my ($percent, $max_dots) = @_;
+	$max_dots  //= 5;
 	my $ret       = '[';
 	my $dots = $percent / ( 100 / $max_dots );
 
@@ -170,7 +170,9 @@ sub print_eee_fan {
 	}
 
 	my $speed = fromfile('/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input');
-	$line{'fan'} = "fan:${speed}";
+
+	$line{fan} = 'fan' . bar($speed / 20, 3);
+
 	return;
 }
 
