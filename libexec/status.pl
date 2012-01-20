@@ -206,7 +206,7 @@ sub print_battery {
 	my $prefix = '/sys/class/power_supply/BAT0';
 
 	if ( not -e $prefix ) {
-		delete $line{bat};
+		$line{bat} = chr(0xa9);
 		return;
 	}
 
@@ -263,7 +263,7 @@ sub print_battery {
 				  / $info{present_rate},
 				(
 					( $info{last_full_capacity} - $info{remaining_capacity} )
-					* 60 
+					* 60
 					  / $info{present_rate}
 				  ) % 60,
 			);
