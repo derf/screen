@@ -4,7 +4,6 @@
 ## used in various status bars
 use 5.010;
 use strict;
-use utf8;
 use warnings;
 
 use Date::Format;
@@ -235,7 +234,7 @@ sub print_battery {
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health   = $info{last_full_capacity} * 100 / $info{design_capacity};
 
-	$line{'bat'} = bar($capacity);
+	$line{bat} = chr(0xa8 - int($capacity * 0.07));
 
 	if ( $info{charging_state} eq 'discharging' ) {
 		$interval{current} = $interval{battery};
@@ -249,7 +248,7 @@ sub print_battery {
 	given ( $info{charging_state} ) {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
-				' ˬ %.f%% %02d:%02.fh',
+				' %.f%% %02d:%02.fh',
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
 				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
@@ -257,7 +256,8 @@ sub print_battery {
 		}
 		when ('charging') {
 			$line{'bat'} .= sprintf(
-				' ˄ %.f%% %02d:%02.fh',
+				' %c %.f%% %02d:%02.fh',
+				0xa9,
 				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
 				  / $info{present_rate},
@@ -269,7 +269,8 @@ sub print_battery {
 			);
 		}
 		when ('full') {
-			$line{'bat'} .= sprintf( ' = %.f%% (%.f%%)', $capacity, $health, );
+			$line{'bat'} .= sprintf( ' %c %.f%% (%.f%%)',
+				0xa9, $capacity, $health, );
 		}
 		default {
 			$line{'bat'} .= sprintf( ' ? %.f%%', $capacity, );
@@ -373,20 +374,16 @@ sub print_interfaces {
 		}
 	}
 
-	$line{'net'} = undef;
+	$line{net} = undef;
 
 	foreach my $device (@updevices) {
-		my $extra = q{};
 
 		if ( $device eq 'wlan0' ) {
-			$extra  = bar( $wlan{'link'} );
-			$device = 'w';
+			$line{net} = chr(0xaa + int($wlan{link} * 0.05));
 		}
-		elsif ( $device eq 'lan' ) {
-			$device = 'l';
+		else {
+			$line{net} = 'l';
 		}
-
-		$line{'net'} .= sprintf( '%s%s', $device, $extra );
 	}
 	return;
 }
