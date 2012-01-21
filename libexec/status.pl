@@ -170,7 +170,7 @@ sub print_eee_fan {
 
 	my $speed = fromfile('/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input');
 
-	$line{fan} = 'fan ' . chr(0xc0 + int($speed / 400));
+	$line{fan} = 'fan ' . chr(0xc0 + sprintf('%.f', $speed / 400));
 
 	return;
 }
@@ -234,7 +234,7 @@ sub print_battery {
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health   = $info{last_full_capacity} * 100 / $info{design_capacity};
 
-	$line{bat} = chr(0xa8 - int($capacity * 0.07));
+	$line{bat} = chr(0xa8 - sprintf('%.f', $capacity * 0.07));
 
 	if ( $info{charging_state} eq 'discharging' ) {
 		$interval{current} = $interval{battery};
@@ -382,7 +382,7 @@ sub print_interfaces {
 	foreach my $device (@updevices) {
 
 		if ( $device eq 'wlan0' ) {
-			$line{net} .= chr(0xaa + int($wlan{link} * 0.05));
+			$line{net} .= chr(0xaa + sprintf('%.f', $wlan{link} * 0.05));
 		}
 		if ($device eq 'lan') {
 			$line{net} .= 'l';
