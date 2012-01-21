@@ -170,7 +170,7 @@ sub print_eee_fan {
 
 	my $speed = fromfile('/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input');
 
-	$line{fan} = 'fan' . bar($speed / 20, 3);
+	$line{fan} = 'fan ' . chr(0xc0 + int($speed / 400));
 
 	return;
 }
@@ -315,9 +315,9 @@ sub print_meminfo {
 		$_ /= 1024;
 		$_ = int($_);
 	}
-	$line{mem} = sprintf( 'mem:%dM', $mem - $memfree, );
+	$line{mem} = sprintf( 'mem %dM', $mem - $memfree, );
 	if ( $swap > 0 ) {
-		$line{'mem'} .= sprintf( ' swap:%d', $swap - $swapfree, );
+		$line{'mem'} .= sprintf( ' swap %d', $swap - $swapfree, );
 	}
 	return;
 }
@@ -338,7 +338,7 @@ sub print_hddtemp {
 	if ( length( $line{hddtemp} ) ) {
 		$line{hddtemp} .= q{ };
 	}
-	$line{'hddtemp'} .= "$disk:$temp";
+	$line{'hddtemp'} .= "$disk $temp";
 	return;
 }
 
@@ -362,6 +362,9 @@ sub print_interfaces {
 				$on_umts = 1;
 			}
 		}
+		elsif ($device eq 'wlan0') {
+			$wlan{unconnected} = 1;
+		}
 		close($ifstate);
 	}
 
@@ -370,21 +373,25 @@ sub print_interfaces {
 			my $line
 			  = ( split( /\n/, fromfile('/proc/self/net/wireless') ) )[-1];
 			$line =~ m/ ^ \s* wlan0: \s+ \d+ \s+ (?<ll>\d+) /x;
-			$wlan{'link'} = $+{'ll'};
+			$wlan{link} = $+{'ll'};
 		}
 	}
 
-	$line{net} = undef;
+	$line{net} = ((@updevices or $wlan{unconnected}) ? q{} : undef);
 
 	foreach my $device (@updevices) {
 
 		if ( $device eq 'wlan0' ) {
-			$line{net} = chr(0xaa + int($wlan{link} * 0.05));
+			$line{net} .= chr(0xaa + int($wlan{link} * 0.05));
 		}
-		else {
-			$line{net} = 'l';
+		if ($device eq 'lan') {
+			$line{net} .= 'l';
 		}
 	}
+	if ($wlan{unconnected}) {
+		$line{net} .= chr(0xaf);
+	}
+
 	return;
 }
 
