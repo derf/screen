@@ -335,10 +335,7 @@ sub print_hddtemp {
 	if ( length($temp) == 0 or $temp !~ /^ \d+ $/x ) {
 		$temp = '-';
 	}
-	if ( length( $line{hddtemp} ) ) {
-		$line{hddtemp} .= q{ };
-	}
-	$line{'hddtemp'} .= "$disk $temp";
+	$line{'hddtemp'} .= " $temp";
 	return;
 }
 
@@ -456,7 +453,7 @@ while (1) {
 	}
 
 	if ( count(20) ) {
-		$line{'hddtemp'} = q{};
+		$line{hddtemp} = 'hdd';
 		foreach my $disk (@disks) {
 			print_hddtemp($disk);
 		}
