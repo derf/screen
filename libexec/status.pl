@@ -315,7 +315,7 @@ sub print_meminfo {
 		$_ /= 1024;
 		$_ = int($_);
 	}
-	$line{mem} = sprintf( 'mem %dM', $mem - $memfree, );
+	$line{mem} = sprintf( '%c %dM', 0xb0, $mem - $memfree, );
 	if ( $swap > 0 ) {
 		$line{'mem'} .= sprintf( ' swap %d', $swap - $swapfree, );
 	}
