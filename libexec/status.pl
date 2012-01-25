@@ -196,7 +196,7 @@ sub print_eee_thermal {
 	}
 
 	$line{'thermal'}
-	  = sprintf( 'cpu%s%d', $sign, fromfile("$prefix/temp1_input") / 1000, );
+	  = sprintf( '%s%d', $sign, fromfile("$prefix/temp1_input") / 1000, );
 	return;
 }
 
@@ -234,7 +234,7 @@ sub print_battery {
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health   = $info{last_full_capacity} * 100 / $info{design_capacity};
 
-	$line{bat} = chr(0xa8 - sprintf('%.f', $capacity * 0.07));
+	$line{bat} = chr(0xa9 - sprintf('%.f', $capacity * 0.09));
 
 	if ( $info{charging_state} eq 'discharging' ) {
 		$interval{current} = $interval{battery};
@@ -248,17 +248,15 @@ sub print_battery {
 	given ( $info{charging_state} ) {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
-				' %.f%% %02d:%02.fh',
-				$capacity,
+				' %02d:%02.fh',
 				$info{remaining_capacity} / $info{present_rate},
 				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
 			);
 		}
 		when ('charging') {
 			$line{'bat'} .= sprintf(
-				' %c %.f%% %02d:%02.fh',
-				0xa9,
-				$capacity,
+				' %c %02d:%02.fh',
+				0xb2,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
 				  / $info{present_rate},
 				(
@@ -269,8 +267,8 @@ sub print_battery {
 			);
 		}
 		when ('full') {
-			$line{'bat'} .= sprintf( ' %c %.f%% (%.f%%)',
-				0xa9, $capacity, $health, );
+			$line{'bat'} .= sprintf( ' %c (%.f%%)',
+				0xa9, $health, );
 		}
 		default {
 			$line{'bat'} .= sprintf( ' ? %.f%%', $capacity, );
@@ -484,7 +482,7 @@ while (1) {
 	$buf = q{};
 	for my $element (
 		@line{
-			'np',  'mem', 'fan',  'thermal', 'hddtemp', 'rfkill',
+			'np', 'fan', 'mem', 'thermal', 'hddtemp', 'rfkill',
 			'net', 'bat', 'mail', 'jabber',  'icq'
 		}
 	  )
