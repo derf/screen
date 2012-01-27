@@ -206,7 +206,7 @@ sub print_battery {
 	my $prefix = '/sys/class/power_supply/BAT0';
 
 	if ( not -e $prefix ) {
-		$line{bat} = chr(0xa9);
+		$line{bat} = chr(0xb2);
 		return;
 	}
 
@@ -268,7 +268,7 @@ sub print_battery {
 		}
 		when ('full') {
 			$line{'bat'} .= sprintf( ' %c (%.f%%)',
-				0xa9, $health, );
+				0xb2, $health, );
 		}
 		default {
 			$line{'bat'} .= sprintf( ' ? %.f%%', $capacity, );
