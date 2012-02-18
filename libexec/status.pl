@@ -438,9 +438,9 @@ while (1) {
 		print_np;
 	}
 
-	if ( count(2) ) {
-		print_meminfo;
-	}
+#	if ( count(2) ) {
+#		print_meminfo;
+#	}
 	if ( count(5) and $hostname eq 'descent' ) {
 		print_eee_fan;
 		print_eee_thermal;
