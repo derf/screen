@@ -7,6 +7,7 @@ use strict;
 use warnings;
 
 use Date::Format;
+use File::Slurp;
 use POSIX qw(mkfifo);
 
 my $buf;
@@ -337,6 +338,21 @@ sub print_hddtemp {
 	return;
 }
 
+sub print_media {
+	debug('media');
+
+	my @media = grep { not -l "/media/$_" } read_dir('/media');
+
+	if (@media == 0) {
+		$line{media} = undef;
+	}
+	else {
+		$line{media} = sprintf('[%s]',
+			join(q{ }, @media));
+	}
+	return;
+}
+
 sub print_interfaces {
 	my @devices;
 	my @updevices;
@@ -460,10 +476,8 @@ while (1) {
 
 	if ( count(5) ) {
 		print_interfaces;
-	}
-
-	if ( count(5) ) {
-		print_battery();
+		print_battery;
+		print_media;
 	}
 
 	if ( count(20) ) {
@@ -483,7 +497,7 @@ while (1) {
 	for my $element (
 		@line{
 			'np', 'fan', 'mem', 'thermal', 'hddtemp', 'rfkill',
-			'net', 'bat', 'mail', 'jabber',  'icq'
+			'net', 'bat', 'media', 'mail',
 		}
 	  )
 	{
