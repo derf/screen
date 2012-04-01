@@ -27,6 +27,8 @@ my %interval   = (
 my %line;
 local $| = 1;
 
+my $smartphone = '/dev/disk/by-id/usb-HTC_Android_Phone_SH18HRT00504-0:0';
+
 if ( $ARGV[0] and ( $ARGV[0] eq '-d' ) ) {
 	$debug = 1;
 }
@@ -342,6 +344,10 @@ sub print_media {
 	debug('media');
 
 	my @media = grep { not -l "/media/$_" } read_dir('/media');
+
+	if (-e $smartphone) {
+		push(@media, chr(0xb3));
+	}
 
 	if (@media == 0) {
 		$line{media} = undef;
