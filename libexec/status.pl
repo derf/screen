@@ -287,6 +287,7 @@ sub print_np {
 	my $np = qx{envify mpc -qf '[[%artist% - ]%title%]|[%file%]' current};
 	if ( length($np) ) {
 		$np =~ s/\n//s;
+		$np = substr($np, 0, 50);
 		$line{'np'} = $np;
 	}
 	else {
