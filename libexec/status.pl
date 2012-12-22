@@ -120,13 +120,13 @@ sub print_rfkill {
 	}
 }
 
-sub print_aneurysm {
+sub print_flux {
 	my $ssh_command
 	  = 'ssh -o ConnectTimeout=2 -o ServerAliveInterval=5 -o ServerAliveCountMax=2';
 
-	debug('print_aneurysm');
+	debug('print_flux');
 
-	my $raw = qx|$ssh_command aneurysm 'while read md short; do 
+	my $raw = qx|$ssh_command flux 'while read md short; do 
 		[[ -n \$(echo Maildir/\$md/new/*(N)) ]] && echo \$short; true;
 		done < Maildir/maildirs'|;
 
@@ -488,7 +488,7 @@ while (1) {
 		and -e '/tmp/ssh-derf.homelinux.org-22-derf'
 		and not $on_umts )
 	{
-		print_aneurysm;
+		print_flux;
 	}
 	$line{'date'} = strftime( '%Y-%m-%d %H:%M', @{ [ localtime(time) ] } );
 	print_time_pulse();
