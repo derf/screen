@@ -485,7 +485,7 @@ while (1) {
 	}
 
 	if (    count(10)
-		and -e '/tmp/ssh-flux.vpn.derf0.net-22-derf'
+		and -e '/tmp/ssh-derf.homelinux.org-22-derf'
 		and not $on_umts )
 	{
 		print_flux;
