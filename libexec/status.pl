@@ -178,7 +178,7 @@ sub print_eee_fan {
 	return;
 }
 
-sub print_eee_thermal {
+sub print_sys_thermal {
 	my $prefix = '/sys/class/hwmon/hwmon0';
 	my $governor
 	  = fromfile('/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor');
@@ -213,11 +213,11 @@ sub print_battery {
 		return;
 	}
 
-	$info{remaining_capacity} = fromfile("$prefix/charge_now") / 1000;
-	$info{last_full_capacity} = fromfile("$prefix/charge_full") / 1000;
-	$info{design_capacity}    = fromfile("$prefix/charge_full_design") / 1000;
+	$info{remaining_capacity} = fromfile("$prefix/energy_now") / 1000;
+	$info{last_full_capacity} = fromfile("$prefix/energy_full") / 1000;
+	$info{design_capacity}    = fromfile("$prefix/energy_full_design") / 1000;
 	$info{charging_state}     = lc( fromfile("$prefix/status") );
-	$info{present_rate}       = fromfile("$prefix/current_now") / 1000;
+	$info{present_rate}       = fromfile("$prefix/power_now") / 1000;
 	$info{present}            = fromfile("$prefix/present");
 
 	debug('battery');
@@ -461,9 +461,9 @@ while (1) {
 		print_np;
 	}
 
-	if ( count(5) and $hostname eq 'descent' ) {
+	if ( count(5) and $hostname ~~ [qw[descent illusion]] ) {
 #		print_eee_fan;
-		print_eee_thermal;
+		print_sys_thermal;
 	}
 
 	if ( count(20) ) {
