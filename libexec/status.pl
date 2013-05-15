@@ -54,9 +54,9 @@ sub debug {
 }
 
 sub bar {
-	my ($percent, $max_dots) = @_;
-	$max_dots  //= 5;
-	my $ret       = '[';
+	my ( $percent, $max_dots ) = @_;
+	$max_dots //= 5;
+	my $ret = '[';
 	my $dots = $percent / ( 100 / $max_dots );
 
 	$ret .= '=' x int($dots);
@@ -173,7 +173,7 @@ sub print_eee_fan {
 
 	my $speed = fromfile('/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input');
 
-	$line{fan} = 'fan ' . chr(0xc0 + sprintf('%.f', $speed / 400));
+	$line{fan} = 'fan ' . chr( 0xc0 + sprintf( '%.f', $speed / 400 ) );
 
 	return;
 }
@@ -237,7 +237,8 @@ sub print_battery {
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health   = $info{last_full_capacity} * 100 / $info{design_capacity};
 
-	$line{bat} = chr(0xa9 - sprintf('%.f', $capacity * 0.09));
+	#	$line{bat} = chr(0xa9 - sprintf('%.f', $capacity * 0.09));
+	$line{bat} = q{};
 
 	if ( $info{charging_state} eq 'discharging' ) {
 		$interval{current} = $interval{battery};
@@ -251,30 +252,30 @@ sub print_battery {
 	given ( $info{charging_state} ) {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
-				' %02d:%02.fh',
+				'%d%% - %02d:%02.fh',
+				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
 				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
 			);
 		}
 		when ('charging') {
 			$line{'bat'} .= sprintf(
-				' %c %02d:%02.fh',
-				0xb2,
+				'%d%% + %02d:%02.fh',
+				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
 				  / $info{present_rate},
 				(
 					( $info{last_full_capacity} - $info{remaining_capacity} )
 					* 60
 					  / $info{present_rate}
-				  ) % 60,
+				) % 60,
 			);
 		}
 		when ('full') {
-			$line{'bat'} .= sprintf( ' %c (%.f%%)',
-				0xb2, $health, );
+			$line{'bat'} .= sprintf( 'full (%.f%%)', $health, );
 		}
 		default {
-			$line{'bat'} .= sprintf( ' ? %.f%%', $capacity, );
+			$line{'bat'} .= sprintf( '? %.f%% (%.f%%)', $capacity, $health );
 		}
 	}
 	return;
@@ -287,7 +288,7 @@ sub print_np {
 	my $np = qx{envify mpc -qf '[[%artist% - ]%title%]|[%file%]' current};
 	if ( length($np) ) {
 		$np =~ s/\n//s;
-		$np = substr($np, -50);
+		$np = substr( $np, -50 );
 		$line{'np'} = $np;
 	}
 	else {
@@ -346,16 +347,15 @@ sub print_media {
 
 	my @media = grep { not -l "/media/$_" } read_dir('/media');
 
-	if (-e $smartphone) {
-		push(@media, chr(0xb3));
+	if ( -e $smartphone ) {
+		push( @media, chr(0xb3) );
 	}
 
-	if (@media == 0) {
+	if ( @media == 0 ) {
 		$line{media} = undef;
 	}
 	else {
-		$line{media} = sprintf('[%s]',
-			join(q{ }, @media));
+		$line{media} = sprintf( '[%s]', join( q{ }, @media ) );
 	}
 	return;
 }
@@ -380,7 +380,7 @@ sub print_interfaces {
 				$on_umts = 1;
 			}
 		}
-		elsif ($device eq 'wlan0') {
+		elsif ( $device eq 'wlan0' ) {
 			$wlan{unconnected} = 1;
 		}
 		close($ifstate);
@@ -395,18 +395,18 @@ sub print_interfaces {
 		}
 	}
 
-	$line{net} = ((@updevices or $wlan{unconnected}) ? q{} : undef);
+	$line{net} = ( ( @updevices or $wlan{unconnected} ) ? q{} : undef );
 
 	foreach my $device (@updevices) {
 
 		if ( $device eq 'wlan0' ) {
-			$line{net} .= chr(0xaa + sprintf('%.f', $wlan{link} * 0.05));
+			$line{net} .= chr( 0xaa + sprintf( '%.f', $wlan{link} * 0.05 ) );
 		}
-		if ($device eq 'lan') {
+		if ( $device eq 'lan' ) {
 			$line{net} .= 'l';
 		}
 	}
-	if ($wlan{unconnected}) {
+	if ( $wlan{unconnected} ) {
 		$line{net} .= chr(0xaf);
 	}
 
@@ -462,7 +462,8 @@ while (1) {
 	}
 
 	if ( count(5) and $hostname ~~ [qw[descent illusion]] ) {
-#		print_eee_fan;
+
+		#		print_eee_fan;
 		print_sys_thermal;
 	}
 
@@ -496,7 +497,7 @@ while (1) {
 	$buf = q{};
 	for my $element (
 		@line{
-			'np', 'fan', 'mem', 'thermal', 'hddtemp', 'rfkill',
+			'np',  'fan', 'mem',   'thermal', 'hddtemp', 'rfkill',
 			'net', 'bat', 'media', 'mail',
 		}
 	  )
