@@ -275,7 +275,8 @@ sub print_battery {
 			$line{'bat'} .= sprintf( 'full (%.f%%)', $health, );
 		}
 		default {
-			$line{'bat'} .= sprintf( '? %.f%% (%.f%%)', $capacity, $health );
+			# not charging, reported as unknown
+			$line{'bat'} .= sprintf( '= %.f%%', $capacity );
 		}
 	}
 	return;
