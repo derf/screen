@@ -220,6 +220,13 @@ sub print_battery {
 	$info{present_rate}       = fromfile("$prefix/power_now") / 1000;
 	$info{present}            = fromfile("$prefix/present");
 
+	if ($info{design_capacity} == 0) {
+		$info{remaining_capacity} = fromfile("$prefix/charge_now") / 1000;
+		$info{last_full_capacity} = fromfile("$prefix/charge_full") / 1000;
+		$info{design_capacity}    = fromfile("$prefix/charge_full_design") / 1000;
+	$info{present_rate}       = fromfile("$prefix/current_now") / 1000;
+	}
+
 	debug('battery');
 
 	if ( $info{present} == 0 ) {
