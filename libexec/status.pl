@@ -356,7 +356,7 @@ sub print_media {
 	my @media = grep { not -l "/media/$_" } read_dir('/media');
 
 	if ( -e $smartphone ) {
-		push( @media, chr(0xb3) );
+		push( @media, 'phone' );
 	}
 
 	if ( @media == 0 ) {
