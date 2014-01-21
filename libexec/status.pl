@@ -499,8 +499,7 @@ while (1) {
 	{
 		print_flux;
 	}
-	$line{'date'} = strftime( '%Y-%m-%d %H:%M', @{ [ localtime(time) ] } );
-	print_time_pulse();
+	$line{date} = strftime( '%Y-%m-%d %H:%M', @{ [ localtime(time) ] } );
 
 	$buf = q{};
 	for my $element (
@@ -515,7 +514,7 @@ while (1) {
 		}
 	}
 
-	$buf .= $line{date} . q{ } . $line{pulse};
+	$buf .= $line{date};
 
 	system( 'xsetroot', '-name', $buf );
 	sleep( $interval{current} );
