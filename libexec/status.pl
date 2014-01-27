@@ -326,9 +326,9 @@ sub print_meminfo {
 		$_ /= 1024;
 		$_ = int($_);
 	}
-	$line{mem} = sprintf( '%c %dM', 0xb0, $mem - $memfree, );
+	$line{mem} = sprintf( '%dM', $mem - $memfree, );
 	if ( $swap > 0 ) {
-		$line{'mem'} .= sprintf( ' swap %d', $swap - $swapfree, );
+		$line{'mem'} .= sprintf( ' %dsw', $swap - $swapfree, );
 	}
 	return;
 }
@@ -484,6 +484,7 @@ while (1) {
 	}
 
 	if ( count(5) ) {
+		print_meminfo;
 		print_interfaces;
 		print_battery;
 		print_media;
