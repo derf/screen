@@ -220,11 +220,11 @@ sub print_battery {
 	$info{present_rate}       = fromfile("$prefix/power_now") / 1000;
 	$info{present}            = fromfile("$prefix/present");
 
-	if ($info{design_capacity} == 0) {
+	if ( $info{design_capacity} == 0 ) {
 		$info{remaining_capacity} = fromfile("$prefix/charge_now") / 1000;
 		$info{last_full_capacity} = fromfile("$prefix/charge_full") / 1000;
-		$info{design_capacity}    = fromfile("$prefix/charge_full_design") / 1000;
-	$info{present_rate}       = fromfile("$prefix/current_now") / 1000;
+		$info{design_capacity} = fromfile("$prefix/charge_full_design") / 1000;
+		$info{present_rate}    = fromfile("$prefix/current_now") / 1000;
 	}
 
 	debug('battery');
@@ -322,13 +322,10 @@ sub print_meminfo {
 			when ('SwapFree')  { $swapfree = $+{value} }
 		}
 	}
-	foreach ( $mem, $memfree, $swap, $swapfree ) {
-		$_ /= 1024;
-		$_ = int($_);
-	}
-	$line{mem} = sprintf( '%dM', $mem - $memfree, );
+	$line{mem} = sprintf( '%d%%r', ( $mem - $memfree ) * 100 / $mem );
 	if ( $swap > 0 ) {
-		$line{'mem'} .= sprintf( ' %dsw', $swap - $swapfree, );
+		$line{'mem'}
+		  .= sprintf( ' %d%%s', ( $swap - $swapfree ) * 100 / $swap );
 	}
 	return;
 }
