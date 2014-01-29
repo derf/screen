@@ -323,7 +323,7 @@ sub print_meminfo {
 		}
 	}
 	$line{mem} = sprintf( '%d%%r', ( $mem - $memfree ) * 100 / $mem );
-	if ( $swap > 0 ) {
+	if ( $swapfree < $swap ) {
 		$line{'mem'}
 		  .= sprintf( ' %d%%s', ( $swap - $swapfree ) * 100 / $swap );
 	}
