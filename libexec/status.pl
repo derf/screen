@@ -192,7 +192,7 @@ sub print_tp_fan {
 		$line{fan} = '0f';
 	}
 	else {
-		$line{fan} = sprintf( '%.0fkf', $speed );
+		$line{fan} = sprintf( '%.0fkf', $speed / 1000);
 	}
 
 	return;
