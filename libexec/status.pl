@@ -181,18 +181,18 @@ sub print_eee_fan {
 sub print_tp_fan {
 	debug('tp_fan');
 
-	if ( not -r '/sys/devices/platform/thinkpad_hwmon/fan1_input') {
+	if ( not -r '/sys/devices/platform/thinkpad_hwmon/fan1_input' ) {
 		$line{fan} = undef;
 		return;
 	}
 
 	my $speed = fromfile('/sys/devices/platform/thinkpad_hwmon/fan1_input');
 
-	if ($speed == 0) {
+	if ( $speed == 0 ) {
 		$line{fan} = '0f';
 	}
 	else {
-		$line{fan} = sprintf('%.0fkf', $speed);
+		$line{fan} = sprintf( '%.0fkf', $speed );
 	}
 
 	return;
@@ -219,7 +219,7 @@ sub print_sys_thermal {
 	}
 
 	$line{'thermal'}
-	  = sprintf( '%s%d', $sign, fromfile("$prefix/temp1_input") / 1000, );
+	  = sprintf( '%d%s', fromfile("$prefix/temp1_input") / 1000, $sign );
 	return;
 }
 
