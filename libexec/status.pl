@@ -178,6 +178,26 @@ sub print_eee_fan {
 	return;
 }
 
+sub print_tp_fan {
+	debug('tp_fan');
+
+	if ( not -r '/sys/devices/platform/thinkpad_hwmon/fan1_input') {
+		$line{fan} = undef;
+		return;
+	}
+
+	my $speed = fromfile('/sys/devices/platform/thinkpad_hwmon/fan1_input');
+
+	if ($speed == 0) {
+		$line{fan} = '0f';
+	}
+	else {
+		$line{fan} = sprintf('%.0fkf', $speed);
+	}
+
+	return;
+}
+
 sub print_sys_thermal {
 	my $prefix = '/sys/class/hwmon/hwmon0';
 	my $governor
@@ -468,7 +488,7 @@ while (1) {
 
 	if ( count(5) and $hostname ~~ [qw[descent illusion]] ) {
 
-		#		print_eee_fan;
+		print_tp_fan;
 		print_sys_thermal;
 	}
 
