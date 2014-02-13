@@ -192,20 +192,26 @@ sub print_tp_fan {
 		$line{fan} = '0f';
 	}
 	else {
-		$line{fan} = sprintf( '%.0fkf', $speed / 1000);
+		$line{fan} = sprintf( '%.0fkf', $speed / 1000 );
 	}
 
 	return;
 }
 
 sub print_sys_thermal {
-	my $prefix = '/sys/class/hwmon/hwmon0';
+	my $prefix = '/sys/class/hwmon';
+	my @temps;
 	my $governor
 	  = fromfile('/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor');
 	my $sign = q{:};
 
-	debug('eee_thermal');
-	if ( not -e "$prefix/temp1_input" ) {
+	debug('sys_thermal');
+	for my $hwmon (qw(hwmon0 hwmon1 hwmon2 hwmon3 hwmon4 hwmon5 hwmon6)) {
+		if ( -e "${prefix}/${hwmon}/temp1_input" ) {
+			push( @temps, fromfile("${prefix}/${hwmon}/temp1_input") / 1000 );
+		}
+	}
+	if ( not @temps ) {
 		$line{thermal} = undef;
 		return;
 	}
@@ -218,8 +224,7 @@ sub print_sys_thermal {
 		when ('performance')  { $sign = q{^} }
 	}
 
-	$line{'thermal'}
-	  = sprintf( '%d%s', fromfile("$prefix/temp1_input") / 1000, $sign );
+	$line{'thermal'} = sprintf( '%s%s', join( q{ }, @temps ), $sign );
 	return;
 }
 
