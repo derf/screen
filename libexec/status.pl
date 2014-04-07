@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-## Copyright © 2008-2010 by Daniel Friesel <derf@derf.homelinux.org>
+## Copyright © 2008-2010 by Daniel Friesel <derf@finalrewind.org>
 ## License: WTFPL <http://sam.zoy.org/wtfpl>
 ## used in various status bars
 use 5.010;
@@ -517,7 +517,7 @@ while (1) {
 	}
 
 	if (    count(10)
-		and -e '/tmp/ssh-derf.homelinux.org-22-derf'
+		and -e '/tmp/ssh-home.dyn.derf0.net-22-derf'
 		and not $on_umts )
 	{
 		print_flux;
