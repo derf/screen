@@ -120,13 +120,13 @@ sub print_rfkill {
 	}
 }
 
-sub print_flux {
+sub print_lastlight {
 	my $ssh_command
 	  = 'ssh -o ConnectTimeout=2 -o ServerAliveInterval=5 -o ServerAliveCountMax=2';
 
-	debug('print_flux');
+	debug('print_lastlight');
 
-	my $raw = qx|$ssh_command flux 'while read md short; do 
+	my $raw = qx|$ssh_command lastlight 'while read md short; do 
 		[[ -n \$(echo Maildir/\$md/new/*(N)) ]] && echo \$short; true;
 		done < Maildir/maildirs'|;
 
@@ -517,10 +517,10 @@ while (1) {
 	}
 
 	if (    count(10)
-		and -e '/tmp/ssh-derf.homelinux.org-22-derf'
+		and -e '/tmp/ssh-lastlight.derf0.net-22-derf'
 		and not $on_umts )
 	{
-		print_flux;
+		print_lastlight;
 	}
 	$line{date} = strftime( '%Y-%m-%d %H:%M', @{ [ localtime(time) ] } );
 
