@@ -284,7 +284,9 @@ sub print_battery {
 	given ( $info{charging_state} ) {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
-				'- %d%% %02d:%02.fh',
+				'[%s%s] %d%% %02d:%02.fh',
+				'<' x int($capacity * 0.059),
+				' ' x (5 - int($capacity * 0.059)),
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
 				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
@@ -292,7 +294,9 @@ sub print_battery {
 		}
 		when ('charging') {
 			$line{'bat'} .= sprintf(
-				'+ %d%%',
+				'[%s%s] %d%%',
+				'>' x int($capacity * 0.059),
+				' ' x (5 - int($capacity * 0.059)),
 				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
 				  / $info{present_rate},
@@ -304,11 +308,16 @@ sub print_battery {
 			);
 		}
 		when ('full') {
-			$line{'bat'} .= sprintf( 'full (%.f%%)', $health, );
+			$line{'bat'} .= sprintf( '[=====] (%.f%%)', $health, );
 		}
 		default {
 			# not charging, reported as unknown
-			$line{'bat'} .= sprintf( '= %.f%%', $capacity );
+			$line{'bat'} .= sprintf(
+				'[%s%s] %.f%%',
+				'=' x int($capacity * 0.059),
+				' ' x (5 - int($capacity * 0.059)),
+				$capacity
+			);
 		}
 	}
 	return;
