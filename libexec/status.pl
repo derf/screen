@@ -29,6 +29,8 @@ local $| = 1;
 
 my $smartphone = '/dev/disk/by-id/usb-HTC_Android_Phone_SH18HRT00504-0:0';
 
+my @utf8bar = (' ', qw( ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ));
+
 if ( $ARGV[0] and ( $ARGV[0] eq '-d' ) ) {
 	$debug = 1;
 }
@@ -356,10 +358,10 @@ sub print_meminfo {
 			when ('SwapFree')  { $swapfree = $+{value} }
 		}
 	}
-	$line{mem} = sprintf( '%d%%r', ( $mem - $memfree ) * 100 / $mem );
+	$line{mem} = sprintf( 'ram:%s', $utf8bar[ ( $mem - $memfree) * @utf8bar / $mem]);
 	if ( $swapfree < $swap ) {
 		$line{'mem'}
-		  .= sprintf( ' %d%%s', ( $swap - $swapfree ) * 100 / $swap );
+		  .= sprintf( 'swap:%s', $utf8bar[ ( $swap - $swapfree) * @utf8bar / $swap]);
 	}
 	return;
 }
