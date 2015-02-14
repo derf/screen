@@ -194,7 +194,7 @@ sub print_tp_fan {
 		$line{fan} = '0f';
 	}
 	else {
-		$line{fan} = sprintf( '%.0fkf', $speed / 1000 );
+		$line{fan} = sprintf( 'fan %s', $utf8bar[ $speed * @utf8bar / 9000]);
 	}
 
 	return;
@@ -358,10 +358,10 @@ sub print_meminfo {
 			when ('SwapFree')  { $swapfree = $+{value} }
 		}
 	}
-	$line{mem} = sprintf( 'ram:%s', $utf8bar[ ( $mem - $memfree) * @utf8bar / $mem]);
+	$line{mem} = sprintf( 'mem %s', $utf8bar[ ( $mem - $memfree) * @utf8bar / $mem]);
 	if ( $swapfree < $swap ) {
 		$line{'mem'}
-		  .= sprintf( 'swap:%s', $utf8bar[ ( $swap - $swapfree) * @utf8bar / $swap]);
+		  .= sprintf( '   swp %s', $utf8bar[ ( $swap - $swapfree) * @utf8bar / $swap]);
 	}
 	return;
 }
