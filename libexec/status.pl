@@ -191,7 +191,7 @@ sub print_tp_fan {
 	my $speed = fromfile('/sys/devices/platform/thinkpad_hwmon/fan1_input');
 
 	if ( $speed == 0 ) {
-		$line{fan} = '0f';
+		$line{fan} = undef;
 	}
 	else {
 		$line{fan} = sprintf( 'fan %s', $utf8bar[ $speed * @utf8bar / 9000]);
