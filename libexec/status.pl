@@ -29,7 +29,7 @@ local $| = 1;
 
 my $smartphone = '/dev/disk/by-id/usb-HTC_Android_Phone_SH18HRT00504-0:0';
 
-my @utf8bar = (' ', qw( ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ));
+my @utf8bar = ( ' ', qw( ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ) );
 
 if ( $ARGV[0] and ( $ARGV[0] eq '-d' ) ) {
 	$debug = 1;
@@ -194,7 +194,7 @@ sub print_tp_fan {
 		$line{fan} = undef;
 	}
 	else {
-		$line{fan} = sprintf( 'fan %s', $utf8bar[ $speed * @utf8bar / 9000]);
+		$line{fan} = sprintf( 'fan %s', $utf8bar[ $speed * @utf8bar / 9000 ] );
 	}
 
 	return;
@@ -287,8 +287,8 @@ sub print_battery {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
 				'[%s%s] %d%% %02d:%02.fh',
-				'<' x int($capacity * 0.059),
-				' ' x (5 - int($capacity * 0.059)),
+				'<' x int( $capacity * 0.059 ),
+				' ' x ( 5 - int( $capacity * 0.059 ) ),
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
 				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
@@ -297,15 +297,14 @@ sub print_battery {
 		when ('charging') {
 			$line{'bat'} .= sprintf(
 				'[%s%s] %d%%',
-				'>' x int($capacity * 0.059),
-				' ' x (5 - int($capacity * 0.059)),
+				'>' x int( $capacity * 0.059 ),
+				' ' x ( 5 - int( $capacity * 0.059 ) ),
 				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
 				  / $info{present_rate},
 				(
 					( $info{last_full_capacity} - $info{remaining_capacity} )
-					* 60
-					  / $info{present_rate}
+					* 60 / $info{present_rate}
 				) % 60,
 			);
 		}
@@ -314,12 +313,9 @@ sub print_battery {
 		}
 		default {
 			# not charging, reported as unknown
-			$line{'bat'} .= sprintf(
-				'[%s%s] %.f%%',
-				'=' x int($capacity * 0.059),
-				' ' x (5 - int($capacity * 0.059)),
-				$capacity
-			);
+			$line{'bat'} .= sprintf( '[%s%s] %.f%%',
+				'=' x int( $capacity * 0.059 ),
+				' ' x ( 5 - int( $capacity * 0.059 ) ), $capacity );
 		}
 	}
 	return;
@@ -358,10 +354,19 @@ sub print_meminfo {
 			when ('SwapFree')  { $swapfree = $+{value} }
 		}
 	}
-	$line{mem} = sprintf( 'mem %s', $utf8bar[ ( $mem - $memfree) * @utf8bar / $mem]);
-	if ( $swapfree < $swap ) {
-		$line{'mem'}
-		  .= sprintf( '   swp %s', $utf8bar[ ( $swap - $swapfree) * @utf8bar / $swap]);
+
+	my $mem_ratio  = ( $mem - $memfree ) / $mem;
+
+	if ( $mem_ratio < 0.2 ) {
+		$line{mem} = undef;
+	}
+	else {
+		$line{mem} = sprintf( 'mem %s', $utf8bar[ $mem_ratio * @utf8bar ] );
+		if ( $swapfree < $swap ) {
+			my $swap_ratio = ( $swap - $swapfree ) / $swap;
+			$line{mem}
+			  .= sprintf( '   swp %s', $utf8bar[ $swap_ratio * @utf8bar ] );
+		}
 	}
 	return;
 }
