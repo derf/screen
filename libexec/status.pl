@@ -438,13 +438,7 @@ sub print_interfaces {
 
 	DEVICE: foreach my $device (@devices) {
 		open( my $ifstate, '<', "$ifpre/$device/operstate" ) or next;
-		if ( <$ifstate> eq "up\n" or $device ~~ [ 'ppp0', 'pegasus' ] ) {
-			push( @updevices, $device );
-			if ( $device eq 'ppp0' ) {
-				$on_umts = 1;
-			}
-		}
-		elsif ( $device eq 'wlan0' ) {
+		if ( $device eq 'wlan0' ) {
 			$wlan{unconnected} = 1;
 		}
 		close($ifstate);
