@@ -17,7 +17,6 @@ my @disks;
 my $mailpre    = "$ENV{HOME}/Maildir";
 my $confdir    = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my $on_battery = 0;
-my $on_umts    = 0;
 my $counter    = 0;
 my $debug      = 0;
 my %interval   = (
@@ -327,7 +326,10 @@ sub print_unison {
 
 	if (-r '/tmp/misc.log') {
 		my $line = File::ReadBackwards->new('/tmp/misc.log')->readline;
-		if ($line =~ m{to /home}) {
+		if ($line =~ m{ Deleting }) {
+			$line{unison} = '|--|';
+		}
+		elsif ($line =~ m{to /home}) {
 			$line{unison} = '|vv|';
 		}
 		elsif ($line =~ m{from /home}) {
@@ -340,10 +342,10 @@ sub print_np {
 
 	debug('np');
 
-	my $np = qx{envify mpc -qf '[[%artist% - ]%title%]|[%file%]' current};
+	my $np = qx{mpc -qf '[[%artist% - ]%title%]|[%file%]' current};
 	if ( length($np) ) {
 		$np =~ s/\n//s;
-		$np = substr( $np, -50 );
+		$np = substr( $np, -64 );
 		$line{'np'} = $np;
 	}
 	else {
@@ -421,6 +423,7 @@ sub print_media {
 	return;
 }
 
+# outdated
 sub print_interfaces {
 	my @devices;
 	my @updevices;
@@ -538,19 +541,13 @@ while (1) {
 
 	if ( count(5) ) {
 		print_meminfo;
-		print_interfaces;
 		print_battery;
 		print_media;
 		print_unison;
 	}
 
-	if ( count(20) ) {
-		print_rfkill();
-	}
-
 	if (    count(10)
-		and -e '/tmp/ssh-lastlight.derf0.net-22-derf'
-		and not $on_umts )
+		and -e '/tmp/ssh-lastlight.derf0.net-22-derf' )
 	{
 		print_lastlight;
 	}
