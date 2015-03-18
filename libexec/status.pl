@@ -7,6 +7,7 @@ use strict;
 use warnings;
 
 use Date::Format;
+use File::ReadBackwards;
 use File::Slurp;
 use POSIX qw(mkfifo);
 
@@ -321,6 +322,20 @@ sub print_battery {
 	return;
 }
 
+sub print_unison {
+	$line{unison} = undef;
+
+	if (-r '/tmp/misc.log') {
+		my $line = File::ReadBackwards->new('/tmp/misc.log')->readline;
+		if ($line =~ m{to /home}) {
+			$line{unison} = '|vv|';
+		}
+		elsif ($line =~ m{from /home}) {
+			$line{unison} = '|^^|';
+		}
+	}
+}
+
 sub print_np {
 
 	debug('np');
@@ -526,6 +541,7 @@ while (1) {
 		print_interfaces;
 		print_battery;
 		print_media;
+		print_unison;
 	}
 
 	if ( count(20) ) {
@@ -544,7 +560,7 @@ while (1) {
 	for my $element (
 		@line{
 			'np',  'fan', 'mem',   'thermal', 'hddtemp', 'rfkill',
-			'net', 'bat', 'media', 'mail',
+			'net', 'unison', 'bat', 'media', 'mail',
 		}
 	  )
 	{

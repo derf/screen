@@ -1,1 +1,2 @@
 [[ -u /usr/sbin/hddtemp ]] || info+="hddtemp is not setuid\n"
+perlmodule File::ReadBackwards
