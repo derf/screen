@@ -519,7 +519,7 @@ while (1) {
 		print_np;
 	}
 
-	if ( count(5) and $hostname ~~ [qw[descent illusion]] ) {
+	if ( count(5) and $hostname eq 'illusion' ) {
 
 		print_tp_fan;
 		print_sys_thermal;
