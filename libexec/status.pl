@@ -525,6 +525,10 @@ while (1) {
 		print_sys_thermal;
 	}
 
+	if ( count(5) and $hostname eq 'descent' ) {
+		print_sys_thermal;
+	}
+
 	if ( count(20) ) {
 		$line{hddtemp} = 'hdd';
 		foreach my $disk (@disks) {
