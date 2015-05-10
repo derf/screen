@@ -240,11 +240,16 @@ sub print_battery {
 		return;
 	}
 
+	my $lsep = '[';
+	my $rsep = ']';
+
 	$info{remaining_capacity} = fromfile("$prefix/energy_now") / 1000;
 	$info{last_full_capacity} = fromfile("$prefix/energy_full") / 1000;
 	$info{design_capacity}    = fromfile("$prefix/energy_full_design") / 1000;
 	$info{charging_state}     = lc( fromfile("$prefix/status") );
 	$info{present_rate}       = fromfile("$prefix/power_now") / 1000;
+	$info{present_voltage}    = fromfile("$prefix/voltage_now") / 1000;
+	$info{design_min_voltage} = fromfile("$prefix/voltage_min_design") / 1000;
 	$info{present}            = fromfile("$prefix/present");
 
 	if ( $info{design_capacity} == 0 ) {
@@ -283,12 +288,19 @@ sub print_battery {
 		$on_battery = 0;
 	}
 
+	if ( $info{present_voltage} < $info{design_min_voltage} ) {
+		$lsep = '!!';
+		$rsep = '!!';
+	}
+
 	given ( $info{charging_state} ) {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
-				'[%s%s] %d%% %02d:%02.fh',
+				'%s%s%s%s %d%% %02d:%02.fh',
+				$lsep,
 				'<' x int( $capacity * 0.059 ),
 				' ' x ( 5 - int( $capacity * 0.059 ) ),
+				$rsep,
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
 				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
@@ -296,9 +308,11 @@ sub print_battery {
 		}
 		when ('charging') {
 			$line{'bat'} .= sprintf(
-				'[%s%s] %d%%',
+				'%s%s%s%s %d%%',
+				$lsep,
 				'>' x int( $capacity * 0.059 ),
 				' ' x ( 5 - int( $capacity * 0.059 ) ),
+				$rsep,
 				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
 				  / $info{present_rate},
@@ -313,9 +327,11 @@ sub print_battery {
 		}
 		default {
 			# not charging, reported as unknown
-			$line{'bat'} .= sprintf( '[%s%s] %.f%%',
+			$line{'bat'} .= sprintf( '%s%s%s%s %.f%%',
+				$lsep,
 				'=' x int( $capacity * 0.059 ),
-				' ' x ( 5 - int( $capacity * 0.059 ) ), $capacity );
+				' ' x ( 5 - int( $capacity * 0.059 ) ),
+				$rsep, $capacity );
 		}
 	}
 	return;
@@ -324,15 +340,15 @@ sub print_battery {
 sub print_unison {
 	$line{unison} = undef;
 
-	if (-r '/tmp/misc.log') {
+	if ( -r '/tmp/misc.log' ) {
 		my $line = File::ReadBackwards->new('/tmp/misc.log')->readline;
-		if ($line =~ m{ Deleting }) {
+		if ( $line =~ m{ Deleting } ) {
 			$line{unison} = '|--|';
 		}
-		elsif ($line =~ m{to /home}) {
+		elsif ( $line =~ m{to /home} ) {
 			$line{unison} = '|vv|';
 		}
-		elsif ($line =~ m{from /home}) {
+		elsif ( $line =~ m{from /home} ) {
 			$line{unison} = '|^^|';
 		}
 	}
@@ -372,7 +388,7 @@ sub print_meminfo {
 		}
 	}
 
-	my $mem_ratio  = ( $mem - $memfree ) / $mem;
+	my $mem_ratio = ( $mem - $memfree ) / $mem;
 
 	if ( $mem_ratio < 0.2 ) {
 		$line{mem} = undef;
@@ -544,7 +560,7 @@ while (1) {
 		print_unison;
 	}
 
-	if (    count(10)
+	if ( count(10)
 		and -e '/tmp/ssh-lastlight.derf0.net-22-derf' )
 	{
 		print_lastlight;
@@ -554,8 +570,8 @@ while (1) {
 	$buf = q{};
 	for my $element (
 		@line{
-			'np',  'fan', 'mem',   'thermal', 'hddtemp', 'rfkill',
-			'net', 'unison', 'bat', 'media', 'mail',
+			'np',  'fan',    'mem', 'thermal', 'hddtemp', 'rfkill',
+			'net', 'unison', 'bat', 'media',   'mail',
 		}
 	  )
 	{
