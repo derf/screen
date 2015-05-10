@@ -289,8 +289,8 @@ sub print_battery {
 	}
 
 	if ( $info{present_voltage} < $info{design_min_voltage} ) {
-		$lsep = '!!';
-		$rsep = '!!';
+		$lsep = '!';
+		$rsep = '!';
 	}
 
 	given ( $info{charging_state} ) {
