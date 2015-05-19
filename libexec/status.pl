@@ -246,6 +246,7 @@ sub print_battery {
 	$info{remaining_capacity} = fromfile("$prefix/energy_now") / 1000;
 	$info{last_full_capacity} = fromfile("$prefix/energy_full") / 1000;
 	$info{design_capacity}    = fromfile("$prefix/energy_full_design") / 1000;
+	$info{alarm_capacity}     = fromfile("$prefix/alarm") / 1000;
 	$info{charging_state}     = lc( fromfile("$prefix/status") );
 	$info{present_rate}       = fromfile("$prefix/power_now") / 1000;
 	$info{present_voltage}    = fromfile("$prefix/voltage_now") / 1000;
@@ -291,6 +292,10 @@ sub print_battery {
 	if ( $info{present_voltage} < $info{design_min_voltage} ) {
 		$lsep = '!';
 		$rsep = '!';
+	}
+	if ( $info{remaining_capacity} < $info{alarm_capacity} ) {
+		$lsep = '!!';
+		$rsep = '!!';
 	}
 
 	given ( $info{charging_state} ) {
