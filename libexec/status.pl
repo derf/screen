@@ -101,27 +101,6 @@ sub short_bytes {
 	return sprintf( '%d%s', $bytes, $post[0] );
 }
 
-sub print_rfkill {
-	my $prefix = '/sys/class/rfkill';
-	opendir( my $dir, $prefix ) or return;
-	my @entries = grep { /^[^.]/ } readdir($dir);
-	my %rfkill;
-	closedir($dir);
-
-	for my $switch (@entries) {
-		if ( fromfile("${prefix}/${switch}/state") == 1 ) {
-			$rfkill{ fromfile("${prefix}/${switch}/name") } = 1;
-		}
-	}
-
-	if ( $rfkill{'eeepc-bluetooth'} and $rfkill{'hci0'} ) {
-		$line{rfkill} = 'bt';
-	}
-	else {
-		$line{rfkill} = undef;
-	}
-}
-
 sub print_lastlight {
 	my $ssh_command
 	  = 'ssh -o ConnectTimeout=2 -o ServerAliveInterval=5 -o ServerAliveCountMax=2';
@@ -162,6 +141,17 @@ sub print_sensors {
 			}
 			$line{thermal} .= sprintf( "%s:%d", $label, $+{value} );
 		}
+	}
+}
+
+sub print_bt {
+	debug('bt');
+
+	if ( -e '/sys/class/bluetooth/hci0' ) {
+		$line{bt} = 'bt';
+	}
+	else {
+		$line{bt} = undef;
 	}
 }
 
@@ -544,6 +534,7 @@ while (1) {
 
 		print_tp_fan;
 		print_sys_thermal;
+		print_bt;
 	}
 
 	if ( count(5) and $hostname eq 'descent' ) {
@@ -575,8 +566,8 @@ while (1) {
 	$buf = q{};
 	for my $element (
 		@line{
-			'np',  'fan',    'mem', 'thermal', 'hddtemp', 'rfkill',
-			'net', 'unison', 'bat', 'media',   'mail',
+			'np',     'fan', 'mem', 'thermal', 'hddtemp', 'net',
+			'unison', 'bt',  'bat', 'media',   'mail',
 		}
 	  )
 	{
