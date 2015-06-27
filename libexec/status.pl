@@ -155,6 +155,21 @@ sub print_bt {
 	}
 }
 
+sub print_wifi {
+	debug('wifi');
+
+	if ( -e '/sys/class/net/wlan0' and -e '/proc/self/net/wireless' ) {
+		my $status
+		  = ( split( /\n/, fromfile('/proc/self/net/wireless') ) )[-1];
+		$status =~ m/ ^ \s* wlan0: \s+ \d+ \s+ (?<ll>\d+) /x;
+		my $ll = $+{ll} == 70 ? 69 : $+{ll};
+		$line{wifi} = sprintf( 'wf%s', $utf8bar[ $ll * @utf8bar / 70 ] );
+	}
+	else {
+		$line{wifi} = undef;
+	}
+}
+
 sub print_eee_fan {
 	debug('eee_fan');
 
@@ -434,54 +449,6 @@ sub print_media {
 	return;
 }
 
-# outdated
-sub print_interfaces {
-	my @devices;
-	my @updevices;
-	my $ifpre = '/sys/class/net';
-	my %wlan;
-
-	debug('interfaces');
-
-	opendir( my $ifdir, $ifpre ) or return;
-	@devices = grep { !/^\./ } readdir($ifdir);
-	closedir($ifdir);
-
-	DEVICE: foreach my $device (@devices) {
-		open( my $ifstate, '<', "$ifpre/$device/operstate" ) or next;
-		if ( $device eq 'wlan0' ) {
-			$wlan{unconnected} = 1;
-		}
-		close($ifstate);
-	}
-
-	foreach my $device (@updevices) {
-		if ( $device eq 'wlan0' ) {
-			my $line
-			  = ( split( /\n/, fromfile('/proc/self/net/wireless') ) )[-1];
-			$line =~ m/ ^ \s* wlan0: \s+ \d+ \s+ (?<ll>\d+) /x;
-			$wlan{link} = $+{'ll'};
-		}
-	}
-
-	$line{net} = ( ( @updevices or $wlan{unconnected} ) ? q{} : undef );
-
-	foreach my $device (@updevices) {
-
-		if ( $device eq 'wlan0' ) {
-			$line{net} .= chr( 0xaa + sprintf( '%.f', $wlan{link} * 0.05 ) );
-		}
-		if ( $device eq 'lan' ) {
-			$line{net} .= 'l';
-		}
-	}
-	if ( $wlan{unconnected} ) {
-		$line{net} .= chr(0xaf);
-	}
-
-	return;
-}
-
 # Skyshaper Pulse
 # one day has 1000 pulses of 86.4 seconds each
 sub print_time_pulse {
@@ -535,10 +502,12 @@ while (1) {
 		print_tp_fan;
 		print_sys_thermal;
 		print_bt;
+		print_wifi;
 	}
 
 	if ( count(5) and $hostname eq 'descent' ) {
 		print_sys_thermal;
+		print_wifi;
 	}
 
 	if ( count(20) ) {
@@ -566,8 +535,8 @@ while (1) {
 	$buf = q{};
 	for my $element (
 		@line{
-			'np',     'fan', 'mem', 'thermal', 'hddtemp', 'net',
-			'unison', 'bt',  'bat', 'media',   'mail',
+			'np', 'fan',  'mem', 'thermal', 'hddtemp', 'unison',
+			'bt', 'wifi', 'bat', 'media',   'mail',
 		}
 	  )
 	{
