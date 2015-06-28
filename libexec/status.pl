@@ -515,7 +515,7 @@ while (1) {
 		foreach my $disk (@disks) {
 			print_hddtemp($disk);
 		}
-		if ($line{hddtemp} eq 'hdd') {
+		if ( $line{hddtemp} eq 'hdd' ) {
 			$line{hddtemp} = undef;
 		}
 
