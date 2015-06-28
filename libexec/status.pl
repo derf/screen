@@ -14,8 +14,6 @@ use POSIX qw(mkfifo);
 my $buf;
 my $hostname;
 my @disks;
-my $mailpre    = "$ENV{HOME}/Maildir";
-my $confdir    = "$ENV{HOME}/packages/screen/etc/screen.pl";
 my $on_battery = 0;
 my $counter    = 0;
 my $debug      = 0;
@@ -55,29 +53,6 @@ sub debug {
 	}
 }
 
-sub bar {
-	my ( $percent, $max_dots ) = @_;
-	$max_dots //= 5;
-	my $ret = '[';
-	my $dots = $percent / ( 100 / $max_dots );
-
-	$ret .= '=' x int($dots);
-
-	if ( $percent != 100 ) {
-		given ( $dots - int($dots) ) {
-			when ( $_ < 0.25 ) { $ret .= ' ' }
-			when ( $_ < 0.75 ) { $ret .= '-' }
-			default            { $ret .= '=' }
-		}
-	}
-
-	$ret .= ' ' x ( $max_dots - int($dots) - 1 );
-
-	$ret .= ']';
-
-	return $ret;
-}
-
 sub fromfile {
 	my $file = shift;
 	my $content;
@@ -89,16 +64,6 @@ sub fromfile {
 	}
 	chomp($content);
 	return $content;
-}
-
-sub short_bytes {
-	my @post = ( '', 'k', 'M', 'G' );
-	my $bytes = shift;
-	while ( $bytes > 1000 ) {
-		$bytes /= 1000;
-		shift @post;
-	}
-	return sprintf( '%d%s', $bytes, $post[0] );
 }
 
 sub print_lastlight {
@@ -120,27 +85,6 @@ sub print_lastlight {
 	}
 	else {
 		$line{'mail'} = undef;
-	}
-}
-
-sub print_sensors {
-	my $raw = qx|sensors -u|;
-	my $label;
-
-	$line{thermal} = undef;
-
-	for my $line ( split( /\n/, $raw ) ) {
-		if ( $line =~ m{ ^ (?<label> \S+ ) : $ }ox ) {
-			$label = $+{label};
-		}
-		elsif ( $line =~ m{ temp . _input: \s (?<value> \S+ ) $ }ox
-			and $label !~ m{^temp}ox )
-		{
-			if ( $line{thermal} ) {
-				$line{thermal} .= q{ };
-			}
-			$line{thermal} .= sprintf( "%s:%d", $label, $+{value} );
-		}
 	}
 }
 
@@ -168,21 +112,6 @@ sub print_wifi {
 	else {
 		$line{wifi} = undef;
 	}
-}
-
-sub print_eee_fan {
-	debug('eee_fan');
-
-	if ( not -r '/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input' ) {
-		$line{fan} = undef;
-		return;
-	}
-
-	my $speed = fromfile('/sys/devices/platform/eeepc/hwmon/hwmon1/fan1_input');
-
-	$line{fan} = 'fan ' . chr( 0xc0 + sprintf( '%.f', $speed / 400 ) );
-
-	return;
 }
 
 sub print_tp_fan {
@@ -449,18 +378,6 @@ sub print_media {
 	return;
 }
 
-# Skyshaper Pulse
-# one day has 1000 pulses of 86.4 seconds each
-sub print_time_pulse {
-	my ( $sec, $min, $hour ) = gmtime(time);
-
-	my $pulse = ( ( ( ( $hour * 60 ) + $min ) * 60 ) + $sec ) / 86.4;
-
-	$line{pulse} = sprintf( '%d', $pulse );
-
-	return;
-}
-
 sub scan_for_disks {
 	@disks = ();
 
@@ -493,7 +410,7 @@ while (1) {
 		scan_for_disks();
 	}
 
-	if ( count(10) and not $on_battery ) {
+	if ( count(10) ) {
 		print_np;
 	}
 
