@@ -163,7 +163,7 @@ sub print_wifi {
 		  = ( split( /\n/, fromfile('/proc/self/net/wireless') ) )[-1];
 		$status =~ m/ ^ \s* wlan0: \s+ \d+ \s+ (?<ll>\d+) /x;
 		my $ll = $+{ll} == 70 ? 69 : $+{ll};
-		$line{wifi} = sprintf( 'wf%s', $utf8bar[ $ll * @utf8bar / 70 ] );
+		$line{wifi} = sprintf( 'w:%s', $utf8bar[ $ll * @utf8bar / 70 ] );
 	}
 	else {
 		$line{wifi} = undef;
@@ -425,7 +425,7 @@ sub print_hddtemp {
 	}
 	chomp( my $temp = qx{$hddtemp -n SATA:/dev/$disk} );
 	if ( length($temp) == 0 or $temp !~ /^ \d+ $/x ) {
-		$temp = '-';
+		return;
 	}
 	$line{'hddtemp'} .= " $temp";
 	return;
@@ -514,6 +514,9 @@ while (1) {
 		$line{hddtemp} = 'hdd';
 		foreach my $disk (@disks) {
 			print_hddtemp($disk);
+		}
+		if ($line{hddtemp} eq 'hdd') {
+			$line{hddtemp} = undef;
 		}
 
 	}
