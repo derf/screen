@@ -30,10 +30,14 @@ my $smartphone = '/dev/disk/by-id/usb-HTC_Android_Phone_SH18HRT00504-0:0';
 my @utf8vbar = ( ' ', qw( ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ) );
 my @utf8hbar = ( ' ', qw( ▏ ▎ ▍ ▌ ▋ ▊ ▉ █ ) );
 
-my @utf8hbar2 = ((map { "$_ " } @utf8hbar), (map { "█$_" } @utf8hbar[1..7]));
-my @utf8hbar3 = ((map { "$_ " } @utf8hbar2), (map { "██$_" } @utf8hbar[1..7]));
-my @utf8hbar4 = ((map { "$_ " } @utf8hbar3), (map { "███$_" } @utf8hbar[1..7]));
-
+my @utf8hbar2
+  = ( ( map { "$_ " } @utf8hbar ), ( map { "█$_" } @utf8hbar[ 1 .. 7 ] ) );
+my @utf8hbar3 = ( ( map { "$_ " } @utf8hbar2 ),
+	( map { "██$_" } @utf8hbar[ 1 .. 7 ] ) );
+my @utf8hbar4 = (
+	( map { "$_ " } @utf8hbar3 ),
+	( map { "███$_" } @utf8hbar[ 1 .. 7 ] )
+);
 
 if ( $ARGV[0] and ( $ARGV[0] eq '-d' ) ) {
 	$debug = 1;
@@ -134,7 +138,8 @@ sub print_tp_fan {
 		$line{fan} = undef;
 	}
 	else {
-		$line{fan} = sprintf( 'fan %s', $utf8vbar[ $speed * @utf8vbar / 9000 ] );
+		$line{fan}
+		  = sprintf( 'fan %s', $utf8vbar[ $speed * @utf8vbar / 9000 ] );
 	}
 
 	return;
@@ -241,7 +246,7 @@ sub print_battery {
 			$line{'bat'} .= sprintf(
 				'%s%s%s %d%% %02d:%02.fh',
 				$lsep,
-				$utf8hbar4[$capacity * @utf8hbar4 / 101],
+				$utf8hbar4[ $capacity * @utf8hbar4 / 101 ],
 				$rsep,
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
@@ -252,7 +257,7 @@ sub print_battery {
 			$line{'bat'} .= sprintf(
 				'%s%s%s %d%%',
 				$lsep,
-				$utf8hbar4[$capacity * @utf8hbar4 / 101],
+				$utf8hbar4[ $capacity * @utf8hbar4 / 101 ],
 				$rsep,
 				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
@@ -265,14 +270,12 @@ sub print_battery {
 		}
 		when ('full') {
 			$line{'bat'} .= sprintf( '[%s] (%.f%%)',
-				$utf8hbar4[$capacity * @utf8hbar4 / 101],
-				$health);
+				$utf8hbar4[ $capacity * @utf8hbar4 / 101 ], $health );
 		}
 		default {
 			# not charging, reported as unknown
 			$line{'bat'} .= sprintf( '%s%s%s %.f%%',
-				$lsep,
-				$utf8hbar4[$capacity * @utf8hbar4 / 101],
+				$lsep, $utf8hbar4[ $capacity * @utf8hbar4 / 101 ],
 				$rsep, $capacity );
 		}
 	}
@@ -294,22 +297,6 @@ sub print_unison {
 			$line{unison} = '|^^|';
 		}
 	}
-}
-
-sub print_np {
-
-	debug('np');
-
-	my $np = qx{mpc -qf '[[%artist% - ]%title%]|[%file%]' current};
-	if ( length($np) ) {
-		$np =~ s/\n//s;
-		$np = substr( $np, -64 );
-		$line{'np'} = $np;
-	}
-	else {
-		$line{'np'} = undef;
-	}
-	return;
 }
 
 sub print_meminfo {
@@ -413,10 +400,6 @@ while (1) {
 		scan_for_disks();
 	}
 
-	if ( count(10) ) {
-		print_np;
-	}
-
 	if ( count(5) and $hostname eq 'illusion' ) {
 
 		print_tp_fan;
@@ -458,8 +441,8 @@ while (1) {
 	$buf = q{};
 	for my $element (
 		@line{
-			'np', 'fan',  'mem', 'thermal', 'hddtemp', 'unison',
-			'bt', 'wifi', 'bat', 'media',   'mail',
+			'fan',  'mem', 'thermal', 'hddtemp', 'unison', 'bt',
+			'wifi', 'bat', 'media',   'mail',
 		}
 	  )
 	{
