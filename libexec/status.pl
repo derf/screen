@@ -116,8 +116,13 @@ sub print_wifi {
 		my $status
 		  = ( split( /\n/, fromfile('/proc/self/net/wireless') ) )[-1];
 		$status =~ m/ ^ \s* wlan0: \s+ \d+ \s+ (?<ll>\d+) /x;
-		my $ll = $+{ll} == 70 ? 69 : $+{ll};
-		$line{wifi} = sprintf( 'w:%s', $utf8vbar[ $ll * @utf8vbar / 70 ] );
+
+		# original value range 0 .. 70, transformed to 0 .. 49
+		my $ll = $+{ll} - 21;
+		if ( $ll < 0 ) {
+			$ll = 0;
+		}
+		$line{wifi} = sprintf( 'w %s', $utf8vbar[ $ll * @utf8vbar / 50 ] );
 	}
 	else {
 		$line{wifi} = undef;
