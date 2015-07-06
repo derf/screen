@@ -190,8 +190,8 @@ sub print_battery {
 		return;
 	}
 
-	my $lsep = '[';
-	my $rsep = ']';
+	my $lsep = '▕';
+	my $rsep = '▏';
 
 	$info{remaining_capacity} = fromfile("$prefix/energy_now") / 1000;
 	$info{last_full_capacity} = fromfile("$prefix/energy_full") / 1000;
@@ -240,10 +240,10 @@ sub print_battery {
 	}
 
 	if ( $info{present_voltage} < $info{design_min_voltage} ) {
-		$lsep = $rsep = '!';
+		$rsep .= '!';
 	}
 	if ( $info{remaining_capacity} < $info{alarm_capacity} ) {
-		$lsep = $rsep = '!!';
+		$rsep .= '!';
 	}
 
 	given ( $info{charging_state} ) {
@@ -251,7 +251,7 @@ sub print_battery {
 			$line{'bat'} .= sprintf(
 				'%s%s%s %d%% %02d:%02.fh',
 				$lsep,
-				$utf8hbar4[ $capacity * @utf8hbar4 / 101 ],
+				$utf8vbar[ $capacity * @utf8vbar / 101 ],
 				$rsep,
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
@@ -262,7 +262,7 @@ sub print_battery {
 			$line{'bat'} .= sprintf(
 				'%s%s%s %d%%',
 				$lsep,
-				$utf8hbar4[ $capacity * @utf8hbar4 / 101 ],
+				$utf8vbar[ $capacity * @utf8vbar / 101 ],
 				$rsep,
 				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
@@ -275,12 +275,12 @@ sub print_battery {
 		}
 		when ('full') {
 			$line{'bat'} .= sprintf( '[%s] (%.f%%)',
-				$utf8hbar4[ $capacity * @utf8hbar4 / 101 ], $health );
+				$utf8vbar[ $capacity * @utf8vbar / 101 ], $health );
 		}
 		default {
 			# not charging, reported as unknown
 			$line{'bat'} .= sprintf( '%s%s%s %.f%%',
-				$lsep, $utf8hbar4[ $capacity * @utf8hbar4 / 101 ],
+				$lsep, $utf8vbar[ $capacity * @utf8vbar / 101 ],
 				$rsep, $capacity );
 		}
 	}
