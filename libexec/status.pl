@@ -27,7 +27,13 @@ local $| = 1;
 
 my $smartphone = '/dev/disk/by-id/usb-HTC_Android_Phone_SH18HRT00504-0:0';
 
-my @utf8bar = ( ' ', qw( ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ) );
+my @utf8vbar = ( ' ', qw( ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ) );
+my @utf8hbar = ( ' ', qw( ▏ ▎ ▍ ▌ ▋ ▊ ▉ █ ) );
+
+my @utf8hbar2 = ((map { "$_ " } @utf8hbar), (map { "█$_" } @utf8hbar[1..7]));
+my @utf8hbar3 = ((map { "$_ " } @utf8hbar2), (map { "██$_" } @utf8hbar[1..7]));
+my @utf8hbar4 = ((map { "$_ " } @utf8hbar3), (map { "███$_" } @utf8hbar[1..7]));
+
 
 if ( $ARGV[0] and ( $ARGV[0] eq '-d' ) ) {
 	$debug = 1;
@@ -107,7 +113,7 @@ sub print_wifi {
 		  = ( split( /\n/, fromfile('/proc/self/net/wireless') ) )[-1];
 		$status =~ m/ ^ \s* wlan0: \s+ \d+ \s+ (?<ll>\d+) /x;
 		my $ll = $+{ll} == 70 ? 69 : $+{ll};
-		$line{wifi} = sprintf( 'w:%s', $utf8bar[ $ll * @utf8bar / 70 ] );
+		$line{wifi} = sprintf( 'w:%s', $utf8vbar[ $ll * @utf8vbar / 70 ] );
 	}
 	else {
 		$line{wifi} = undef;
@@ -128,7 +134,7 @@ sub print_tp_fan {
 		$line{fan} = undef;
 	}
 	else {
-		$line{fan} = sprintf( 'fan %s', $utf8bar[ $speed * @utf8bar / 9000 ] );
+		$line{fan} = sprintf( 'fan %s', $utf8vbar[ $speed * @utf8vbar / 9000 ] );
 	}
 
 	return;
@@ -224,21 +230,18 @@ sub print_battery {
 	}
 
 	if ( $info{present_voltage} < $info{design_min_voltage} ) {
-		$lsep = '!';
-		$rsep = '!';
+		$lsep = $rsep = '!';
 	}
 	if ( $info{remaining_capacity} < $info{alarm_capacity} ) {
-		$lsep = '!!';
-		$rsep = '!!';
+		$lsep = $rsep = '!!';
 	}
 
 	given ( $info{charging_state} ) {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
-				'%s%s%s%s %d%% %02d:%02.fh',
+				'%s%s%s %d%% %02d:%02.fh',
 				$lsep,
-				'<' x int( $capacity * 0.059 ),
-				' ' x ( 5 - int( $capacity * 0.059 ) ),
+				$utf8hbar4[$capacity * @utf8hbar4 / 101],
 				$rsep,
 				$capacity,
 				$info{remaining_capacity} / $info{present_rate},
@@ -247,10 +250,9 @@ sub print_battery {
 		}
 		when ('charging') {
 			$line{'bat'} .= sprintf(
-				'%s%s%s%s %d%%',
+				'%s%s%s %d%%',
 				$lsep,
-				'>' x int( $capacity * 0.059 ),
-				' ' x ( 5 - int( $capacity * 0.059 ) ),
+				$utf8hbar4[$capacity * @utf8hbar4 / 101],
 				$rsep,
 				$capacity,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
@@ -262,14 +264,15 @@ sub print_battery {
 			);
 		}
 		when ('full') {
-			$line{'bat'} .= sprintf( '[=====] (%.f%%)', $health, );
+			$line{'bat'} .= sprintf( '[%s] (%.f%%)',
+				$utf8hbar4[$capacity * @utf8hbar4 / 101],
+				$health);
 		}
 		default {
 			# not charging, reported as unknown
-			$line{'bat'} .= sprintf( '%s%s%s%s %.f%%',
+			$line{'bat'} .= sprintf( '%s%s%s %.f%%',
 				$lsep,
-				'=' x int( $capacity * 0.059 ),
-				' ' x ( 5 - int( $capacity * 0.059 ) ),
+				$utf8hbar4[$capacity * @utf8hbar4 / 101],
 				$rsep, $capacity );
 		}
 	}
@@ -333,11 +336,11 @@ sub print_meminfo {
 		$line{mem} = undef;
 	}
 	else {
-		$line{mem} = sprintf( 'mem %s', $utf8bar[ $mem_ratio * @utf8bar ] );
+		$line{mem} = sprintf( 'mem %s', $utf8vbar[ $mem_ratio * @utf8vbar ] );
 		if ( $swapfree < $swap ) {
 			my $swap_ratio = ( $swap - $swapfree ) / $swap;
 			$line{mem}
-			  .= sprintf( '   swp %s', $utf8bar[ $swap_ratio * @utf8bar ] );
+			  .= sprintf( '   swp %s', $utf8vbar[ $swap_ratio * @utf8vbar ] );
 		}
 	}
 	return;
