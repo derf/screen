@@ -293,13 +293,13 @@ sub print_unison {
 	if ( -r '/tmp/misc.log' ) {
 		my $line = File::ReadBackwards->new('/tmp/misc.log')->readline;
 		if ( $line =~ m{ Deleting } ) {
-			$line{unison} = '|--|';
+			$line{unison} = '↻';
 		}
 		elsif ( $line =~ m{to /home} ) {
-			$line{unison} = '|vv|';
+			$line{unison} = '↧';
 		}
 		elsif ( $line =~ m{from /home} ) {
-			$line{unison} = '|^^|';
+			$line{unison} = '↥';
 		}
 	}
 }
