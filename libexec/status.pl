@@ -30,6 +30,8 @@ my $smartphone = '/dev/disk/by-id/usb-HTC_Android_Phone_SH18HRT00504-0:0';
 my @utf8vbar = ( ' ', qw( ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ) );
 my @utf8hbar = ( ' ', qw( ▏ ▎ ▍ ▌ ▋ ▊ ▉ █ ) );
 
+my @utf8vbarx = (qw( ! ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ));
+
 my @utf8hbar2
   = ( ( map { "$_ " } @utf8hbar ), ( map { "█$_" } @utf8hbar[ 1 .. 7 ] ) );
 my @utf8hbar3 = ( ( map { "$_ " } @utf8hbar2 ),
@@ -239,9 +241,9 @@ sub print_battery {
 		$on_battery = 0;
 	}
 
-	if ( $info{present_voltage} < $info{design_min_voltage} ) {
-		$rsep .= '!';
-	}
+	#	if ( $info{present_voltage} < $info{design_min_voltage} ) {
+	#		$rsep .= '!';
+	#	}
 	if ( $info{remaining_capacity} < $info{alarm_capacity} ) {
 		$rsep .= '!';
 	}
@@ -252,7 +254,7 @@ sub print_battery {
 				'%.f%% %s%s%s %02d:%02.fh',
 				$capacity,
 				$lsep,
-				$utf8vbar[ $capacity * @utf8vbar / 101 ],
+				$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
 				$rsep,
 				$info{remaining_capacity} / $info{present_rate},
 				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
@@ -263,7 +265,7 @@ sub print_battery {
 				'%.f%% %s%s%s',
 				$capacity,
 				$lsep,
-				$utf8vbar[ $capacity * @utf8vbar / 101 ],
+				$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
 				$rsep,
 				( $info{last_full_capacity} - $info{remaining_capacity} )
 				  / $info{present_rate},
@@ -275,13 +277,13 @@ sub print_battery {
 		}
 		when ('full') {
 			$line{'bat'} .= sprintf( '(%.f%%) %s%s%s',
-				$health, $lsep, $utf8vbar[ $capacity * @utf8vbar / 101 ],
+				$health, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
 				$rsep );
 		}
 		default {
 			# not charging, reported as unknown
 			$line{'bat'} .= sprintf( '%.f%% %s%s%s',
-				$capacity, $lsep, $utf8vbar[ $capacity * @utf8vbar / 101 ],
+				$capacity, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
 				$rsep, );
 		}
 	}
