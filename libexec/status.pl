@@ -261,6 +261,7 @@ sub print_battery {
 			);
 		}
 		when ('charging') {
+			$rsep .= '⇧';
 			$line{'bat'} .= sprintf(
 				'%.f%% %s%s%s',
 				$capacity,
@@ -276,11 +277,13 @@ sub print_battery {
 			);
 		}
 		when ('full') {
+			$rsep .= '↯';
 			$line{'bat'} .= sprintf( '(%.f%%) %s%s%s',
 				$health, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
 				$rsep );
 		}
 		default {
+			$rsep .= '↯';
 			# not charging, reported as unknown
 			$line{'bat'} .= sprintf( '%.f%% %s%s%s',
 				$capacity, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
