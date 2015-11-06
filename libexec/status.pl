@@ -284,6 +284,7 @@ sub print_battery {
 		}
 		default {
 			$rsep .= '↯';
+
 			# not charging, reported as unknown
 			$line{'bat'} .= sprintf( '%.f%% %s%s%s',
 				$capacity, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
@@ -447,13 +448,13 @@ while (1) {
 	{
 		print_lastlight;
 	}
-	$line{date} = strftime( '%Y-%m-%d %H:%M', @{ [ localtime(time) ] } );
+	$line{date} = strftime( '%H:%M', @{ [ localtime(time) ] } );
 
 	$buf = q{};
 	for my $element (
 		@line{
-			'fan',  'mem', 'thermal', 'hddtemp', 'unison', 'bt',
-			'wifi', 'bat', 'media',   'mail',
+			'unison',  'mail', 'media', 'fan', 'mem', 'thermal',
+			'hddtemp', 'bt',   'wifi',  'bat'
 		}
 	  )
 	{
