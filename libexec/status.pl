@@ -251,7 +251,7 @@ sub print_battery {
 	given ( $info{charging_state} ) {
 		when ('discharging') {
 			$line{'bat'} .= sprintf(
-				'%.f%% %s%s%s %02d:%02.fh',
+				'%.f%% %s%s%s %d:%02.f',
 				$capacity,
 				$lsep,
 				$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
