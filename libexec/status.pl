@@ -41,6 +41,8 @@ my @utf8hbar4 = (
 	( map { "███$_" } @utf8hbar[ 1 .. 7 ] )
 );
 
+my $detailed = 0;
+
 if ( $ARGV[0] and ( $ARGV[0] eq '-d' ) ) {
 	$debug = 1;
 }
@@ -248,48 +250,67 @@ sub print_battery {
 		$rsep .= '!';
 	}
 
-	given ( $info{charging_state} ) {
-		when ('discharging') {
-			$line{'bat'} .= sprintf(
-				'%.f%% %s%s%s %d:%02.f',
-				$capacity,
-				$lsep,
-				$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
-				$rsep,
-				$info{remaining_capacity} / $info{present_rate},
-				( $info{remaining_capacity} * 60 / $info{present_rate} ) % 60,
-			);
-		}
-		when ('charging') {
-			$rsep .= '⇧';
-			$line{'bat'} .= sprintf(
-				'%.f%% %s%s%s',
-				$capacity,
-				$lsep,
-				$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
-				$rsep,
-				( $info{last_full_capacity} - $info{remaining_capacity} )
-				  / $info{present_rate},
-				(
+	if ( $detailed or $capacity < 10 ) {
+		given ( $info{charging_state} ) {
+			when ('discharging') {
+				$line{'bat'} .= sprintf(
+					'%.f%% %s%s%s %d:%02.f',
+					$capacity,
+					$lsep,
+					$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
+					$rsep,
+					$info{remaining_capacity} / $info{present_rate},
+					( $info{remaining_capacity} * 60 / $info{present_rate} )
+					  % 60,
+				);
+			}
+			when ('charging') {
+				$rsep .= '⇧';
+				$line{'bat'} .= sprintf(
+					'%.f%% %s%s%s %d:%02.f',
+					$capacity,
+					$lsep,
+					$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
+					$rsep,
 					( $info{last_full_capacity} - $info{remaining_capacity} )
-					* 60 / $info{present_rate}
-				) % 60,
-			);
-		}
-		when ('full') {
-			$rsep .= '↯';
-			$line{'bat'} .= sprintf( '(%.f%%) %s%s%s',
-				$health, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
-				$rsep );
-		}
-		default {
-			$rsep .= '↯';
+					  / $info{present_rate},
+					(
+						(
+							    $info{last_full_capacity}
+							  - $info{remaining_capacity}
+						) * 60 / $info{present_rate}
+					) % 60,
+				);
+			}
+			when ('full') {
+				$rsep .= '↯';
+				$line{'bat'} .= sprintf( '(%.f%%) %s%s%s',
+					$health, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
+					$rsep );
+			}
+			default {
+				$rsep .= '↯';
 
-			# not charging, reported as unknown
-			$line{'bat'} .= sprintf( '%.f%% %s%s%s',
-				$capacity, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
-				$rsep, );
+				# not charging, reported as unknown
+				$line{'bat'} .= sprintf( '%.f%% %s%s%s',
+					$capacity, $lsep,
+					$utf8vbarx[ $capacity * @utf8vbarx / 101 ], $rsep, );
+			}
 		}
+	}
+	else {
+		given ( $info{charging_state} ) {
+			when ('discharging') {
+			}
+			when ('charging') {
+				$rsep .= '⇧';
+			}
+			default {
+				$rsep .= '↯';
+			}
+		}
+		$line{'bat'} .= sprintf( '%s%s%s',
+			$lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ], $rsep, );
 	}
 	return;
 }
