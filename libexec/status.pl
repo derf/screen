@@ -190,7 +190,7 @@ sub print_battery {
 	my $prefix = '/sys/class/power_supply/BAT0';
 
 	if ( not -e $prefix ) {
-		$line{bat} = chr(0xb2);
+		$line{bat} = q{};
 		return;
 	}
 
@@ -231,7 +231,6 @@ sub print_battery {
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health   = $info{last_full_capacity} * 100 / $info{design_capacity};
 
-	#	$line{bat} = chr(0xa9 - sprintf('%.f', $capacity * 0.09));
 	$line{bat} = q{};
 
 	if ( $info{charging_state} eq 'discharging' ) {
@@ -243,9 +242,6 @@ sub print_battery {
 		$on_battery = 0;
 	}
 
-	#	if ( $info{present_voltage} < $info{design_min_voltage} ) {
-	#		$rsep .= '!';
-	#	}
 	if ( $info{remaining_capacity} < $info{alarm_capacity} ) {
 		$rsep .= '!';
 	}
