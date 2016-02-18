@@ -246,7 +246,7 @@ sub print_battery {
 		$rsep .= '!';
 	}
 
-	if ( $detailed or $capacity < 10 ) {
+	if ( $detailed or ($info{present_rate} and ($info{remaining_capacity} / $info{present_rate} < 1)) ) {
 		given ( $info{charging_state} ) {
 			when ('discharging') {
 				$line{'bat'} .= sprintf(
