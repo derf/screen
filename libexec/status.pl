@@ -311,6 +311,32 @@ sub print_battery {
 	return;
 }
 
+sub print_battery_bt {
+	my $psdir;
+
+	if (not opendir($psdir, '/sys/class/power_supply')) {
+		$line{bat_bt} = undef;
+		return;
+	}
+
+	my $lsep = '▕';
+	my $rsep = '▏';
+
+	$line{bat_bt} = q{};
+	for my $dir (readdir($psdir)) {
+		my $prefix = "/sys/class/power_supply/$dir";
+		if ($dir =~ m{ ..:..:..:..:..:.. }x and -r "$prefix/capacity") {
+			my $capacity = fromfile("$prefix/capacity");
+			$line{bat_bt} .= sprintf('%s%s%s',
+				$lsep,
+				$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
+				$rsep,
+			);
+		}
+	}
+	return;
+}
+
 sub print_unison {
 	$line{unison} = undef;
 
@@ -427,6 +453,7 @@ while (1) {
 
 	if ( count(60) ) {
 		scan_for_disks();
+		print_battery_bt();
 	}
 
 	if ( count(5) and $hostname eq 'illusion' ) {
@@ -471,7 +498,7 @@ while (1) {
 	for my $element (
 		@line{
 			'unison',  'mail', 'media', 'fan', 'mem', 'thermal',
-			'hddtemp', 'bt',   'wifi',  'bat'
+			'hddtemp', 'bt',   'wifi',  'bat_bt', 'bat'
 		}
 	  )
 	{
