@@ -432,7 +432,7 @@ sub scan_for_disks {
 				next;
 			}
 			my $cap = fromfile("/sys/block/$disk/capability");
-			if ( $cap ~~ [ 10, 12, 50, 52 ] ) {
+			if ( $cap ~~ [ 10, 12, 50, 51, 52 ] ) {
 				push( @disks, $disk );
 			}
 		}
