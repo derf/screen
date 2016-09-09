@@ -164,7 +164,10 @@ sub print_sys_thermal {
 	debug('sys_thermal');
 	for my $hwmon (qw(hwmon0 hwmon1 hwmon2 hwmon3 hwmon4 hwmon5 hwmon6)) {
 		if ( -e "${prefix}/${hwmon}/temp1_input" ) {
-			push( @temps, fromfile("${prefix}/${hwmon}/temp1_input") / 1000 );
+			my $temp = fromfile("${prefix}/${hwmon}/temp1_input") / 1000;
+			if ($temp >= 60) {
+				push( @temps, $temp );
+			}
 		}
 	}
 	if ( not @temps ) {
@@ -374,7 +377,7 @@ sub print_meminfo {
 
 	my $mem_ratio = ( $mem - $memfree ) / $mem;
 
-	if ( $mem_ratio < 0.2 ) {
+	if ( $mem_ratio < 0.75 ) {
 		$line{mem} = undef;
 	}
 	else {
