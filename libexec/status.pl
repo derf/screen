@@ -472,17 +472,6 @@ while (1) {
 		print_wifi;
 	}
 
-	if ( count(20) ) {
-		$line{hddtemp} = 'hdd';
-		foreach my $disk (@disks) {
-			print_hddtemp($disk);
-		}
-		if ( $line{hddtemp} eq 'hdd' ) {
-			$line{hddtemp} = undef;
-		}
-
-	}
-
 	if ( count(5) ) {
 		print_meminfo;
 		print_battery;
