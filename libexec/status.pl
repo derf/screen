@@ -188,13 +188,41 @@ sub print_sys_thermal {
 }
 
 sub print_battery {
+	my $psdir;
+
+	if (not opendir($psdir, '/sys/class/power_supply')) {
+		$line{bat} = undef;
+		return;
+	}
+
+	$line{bat} = q{};
+	for my $dir(readdir($psdir)) {
+		my $prefix = "/sys/class/power_supply/$dir";
+		$line{bat} .= print_battery_part($prefix);
+	}
+	closedir($psdir);
+	return;
+}
+
+sub print_battery_part {
+	my ($prefix) = @_;
 	my %info;
-	my ( $capacity, $health );
-	my $prefix = '/sys/class/power_supply/BAT0';
+	my ( $capacity, $health);
+	my $ret;
 
 	if ( not -e $prefix ) {
-		$line{bat} = q{};
-		return;
+		return q{};
+	}
+
+	if ( -e "${prefix}/online" ) {
+		# AC adapter
+		if (fromfile("${prefix}/online")) {
+			return q{↯};
+		}
+	}
+	elsif ( not -e "${prefix}/present" ) {
+		# Probably not a battery
+		return q{};
 	}
 
 	my $lsep = '▕';
@@ -220,7 +248,7 @@ sub print_battery {
 	debug('battery');
 
 	if ( $info{present} == 0 ) {
-		return;
+		return q{};
 	}
 
 	# prevent division by zero
@@ -234,7 +262,7 @@ sub print_battery {
 	$capacity = $info{remaining_capacity} * 100 / $info{last_full_capacity};
 	$health   = $info{last_full_capacity} * 100 / $info{design_capacity};
 
-	$line{bat} = q{};
+	$ret = q{};
 
 	if ( $info{charging_state} eq 'discharging' ) {
 		$interval{current} = $interval{battery};
@@ -252,7 +280,7 @@ sub print_battery {
 	if ( $detailed or ($info{charging_state} eq 'discharging' and ($info{remaining_capacity} / $info{present_rate} < 2)) ) {
 		given ( $info{charging_state} ) {
 			when ('discharging') {
-				$line{'bat'} .= sprintf(
+				$ret .= sprintf(
 					'%.f%% %s%s%s %d:%02.f',
 					$capacity,
 					$lsep,
@@ -265,7 +293,7 @@ sub print_battery {
 			}
 			when ('charging') {
 				$rsep .= '⇧';
-				$line{'bat'} .= sprintf(
+				$ret .= sprintf(
 					'%.f%% %s%s%s %d:%02.f',
 					$capacity,
 					$lsep,
@@ -282,16 +310,14 @@ sub print_battery {
 				);
 			}
 			when ('full') {
-				$rsep .= '↯';
-				$line{'bat'} .= sprintf( '(%.f%%) %s%s%s',
+				$ret .= sprintf( '(%.f%%) %s%s%s',
 					$health, $lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ],
 					$rsep );
 			}
 			default {
-				$rsep .= '↯';
 
 				# not charging, reported as unknown
-				$line{'bat'} .= sprintf( '%.f%% %s%s%s',
+				$ret .= sprintf( '%.f%% %s%s%s',
 					$capacity, $lsep,
 					$utf8vbarx[ $capacity * @utf8vbarx / 101 ], $rsep, );
 			}
@@ -304,14 +330,11 @@ sub print_battery {
 			when ('charging') {
 				$rsep .= '⇧';
 			}
-			default {
-				$rsep .= '↯';
-			}
 		}
-		$line{'bat'} .= sprintf( '%s%s%s',
+		$ret .= sprintf( '%s%s%s',
 			$lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ], $rsep, );
 	}
-	return;
+	return $ret;
 }
 
 sub print_battery_bt {
