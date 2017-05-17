@@ -482,7 +482,7 @@ while (1) {
 		print_battery_bt();
 	}
 
-	if ( count(5) and $hostname eq 'illusion' ) {
+	if ( count(5) and ($hostname eq 'illusion' or $hostname eq 'vatos')) {
 
 		print_tp_fan;
 		print_sys_thermal;
