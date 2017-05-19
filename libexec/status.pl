@@ -505,7 +505,6 @@ while (1) {
 	if ( count(10)
 		and (
 			-e '/tmp/ssh-lastlight.derf0.net-22-derf'
-			or -e '/tmp/ssh-strata.derf0.net-2222-derf'
 		))
 	{
 		print_lastlight;
