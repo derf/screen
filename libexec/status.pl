@@ -277,7 +277,7 @@ sub print_battery_part {
 		$rsep .= '!';
 	}
 
-	if ( $detailed or ($info{charging_state} eq 'discharging' and ($info{remaining_capacity} / $info{present_rate} < 2)) ) {
+	if ( $detailed or ($info{charging_state} eq 'discharging' and ($info{remaining_capacity} / $info{present_rate} < 1)) ) {
 		given ( $info{charging_state} ) {
 			when ('discharging') {
 				$ret .= sprintf(
