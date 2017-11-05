@@ -189,7 +189,7 @@ sub print_battery {
 		last_full_capacity => 0,
 		design_capacity => 0,
 		present_rate => 0,
-		charging => 0,
+		online => 0,
 	);
 
 	if (not opendir($psdir, '/sys/class/power_supply')) {
@@ -225,7 +225,7 @@ sub get_battery_data {
 	if (-e "${prefix}/online") {
 		# AC adapter
 		if (fromfile("${prefix}/online")) {
-			$info{charging} = 1;
+			$info{online} = 1;
 		}
 	}
 	elsif (-e "${prefix}/present" ) {
