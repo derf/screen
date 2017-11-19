@@ -26,7 +26,7 @@ local $| = 1;
 my @utf8vbar = ( ' ', qw( ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ) );
 my @utf8hbar = ( ' ', qw( ▏ ▎ ▍ ▌ ▋ ▊ ▉ █ ) );
 
-my @utf8vbarx = (qw( ! ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ));
+my @utf8vbarx = (qw( ! _ ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ));
 
 my @utf8hbar2
   = ( ( map { "$_ " } @utf8hbar ), ( map { "█$_" } @utf8hbar[ 1 .. 7 ] ) );
