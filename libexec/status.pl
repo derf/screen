@@ -290,7 +290,7 @@ sub print_battery_data {
 		$rsep .= '!';
 	}
 
-	my $utf8vbar_pos  = int( $info{capacity} * @utf8vbarx / 100 );
+	my $utf8vbar_pos  = int( $info{capacity} * @utf8vbarx / 100.1 );
 	my $utf8vbar_elem = '▒';
 	if ( $utf8vbar_pos < @utf8vbarx ) {
 		$utf8vbar_elem = $utf8vbarx[$utf8vbar_pos];
