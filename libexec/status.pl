@@ -282,6 +282,12 @@ sub print_battery_data {
 		$rsep .= '!';
 	}
 
+	my $utf8vbar_pos = int($info{capacity} * @utf8vbarx / 100);
+	my $utf8vbar_elem = '▒';
+	if ($utf8vbar_pos < @utf8vbarx) {
+		$utf8vbar_elem = $utf8vbarx[$utf8vbar_pos];
+	}
+
 	if ( $detailed ) {
 		given ( $info{charging_state} ) {
 			when ('discharging') {
@@ -289,7 +295,7 @@ sub print_battery_data {
 					'%.f%% %s%s%s %d:%02.f',
 					$info{capacity},
 					$lsep,
-					$utf8vbarx[ $info{capacity} * @utf8vbarx / 101 ],
+					$utf8vbar_elem,
 					$rsep,
 					$info{remaining_capacity} / $info{present_rate},
 					( $info{remaining_capacity} * 60 / $info{present_rate} )
@@ -302,7 +308,7 @@ sub print_battery_data {
 					'%.f%% %s%s%s %d:%02.f',
 					$info{capacity},
 					$lsep,
-					$utf8vbarx[ $info{capacity} * @utf8vbarx / 101 ],
+					$utf8vbar_elem,
 					$rsep,
 					( $info{last_full_capacity} - $info{remaining_capacity} )
 					  / $info{present_rate},
@@ -316,15 +322,13 @@ sub print_battery_data {
 			}
 			when ('full') {
 				$ret .= sprintf( '(%.f%%) %s%s%s',
-					$info{health}, $lsep, $utf8vbarx[ $info{capacity} * @utf8vbarx / 101 ],
-					$rsep );
+					$info{health}, $lsep, $utf8vbar_elem, $rsep );
 			}
 			default {
 
 				# not charging, reported as unknown
 				$ret .= sprintf( '%.f%% %s%s%s',
-					$info{capacity}, $lsep,
-					$utf8vbarx[ $info{capacity} * @utf8vbarx / 101 ], $rsep, );
+					$info{capacity}, $lsep, $utf8vbar_elem, $rsep );
 			}
 		}
 	}
@@ -337,7 +341,7 @@ sub print_battery_data {
 			}
 		}
 		$ret .= sprintf( '%s%s%s',
-			$lsep, $utf8vbarx[ $info{capacity} * @utf8vbarx / 101 ], $rsep, );
+			$lsep, $utf8vbar_elem, $rsep, );
 	}
 	return $ret;
 }
