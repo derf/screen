@@ -13,9 +13,9 @@ use File::Slurp;
 my $buf;
 my $hostname;
 my @disks;
-my $counter    = 0;
-my $debug      = 0;
-my %interval   = (
+my $counter  = 0;
+my $debug    = 0;
+my %interval = (
 	current => 1,
 	ac      => 1,
 	battery => 2,
@@ -159,7 +159,7 @@ sub print_sys_thermal {
 	for my $hwmon (qw(hwmon0 hwmon1 hwmon2 hwmon3 hwmon4 hwmon5 hwmon6)) {
 		if ( -e "${prefix}/${hwmon}/temp1_input" ) {
 			my $temp = fromfile("${prefix}/${hwmon}/temp1_input") / 1000;
-			if ($temp >= 60) {
+			if ( $temp >= 60 ) {
 				push( @temps, $temp );
 			}
 		}
@@ -187,32 +187,33 @@ sub print_battery {
 	my %sum_info = (
 		remaining_capacity => 0,
 		last_full_capacity => 0,
-		design_capacity => 0,
-		present_rate => 0,
-		online => 0,
+		design_capacity    => 0,
+		present_rate       => 0,
+		online             => 0,
 	);
 
-	if (not opendir($psdir, '/sys/class/power_supply')) {
+	if ( not opendir( $psdir, '/sys/class/power_supply' ) ) {
 		$line{bat} = undef;
 		return;
 	}
 
 	$line{bat} = q{};
-	for my $dir (readdir($psdir)) {
+	for my $dir ( readdir($psdir) ) {
 		my $prefix = "/sys/class/power_supply/$dir";
-		push(@battery_data, get_battery_data($prefix));
-		$line{bat} .= print_battery_data($battery_data[-1]);
+		push( @battery_data, get_battery_data($prefix) );
+		$line{bat} .= print_battery_data( $battery_data[-1] );
 	}
 
 	for my $info_ref (@battery_data) {
-		for my $key (keys %sum_info) {
-			if (defined $info_ref->{$key}) {
+		for my $key ( keys %sum_info ) {
+			if ( defined $info_ref->{$key} ) {
 				$sum_info{$key} += $info_ref->{$key};
 			}
 		}
 	}
 
-	$line{bat} .= sprintf(' %.f%%', $sum_info{remaining_capacity} * 100 / $sum_info{last_full_capacity});
+	$line{bat} .= sprintf( ' %.f%%',
+		$sum_info{remaining_capacity} * 100 / $sum_info{last_full_capacity} );
 
 	closedir($psdir);
 	return;
@@ -222,40 +223,45 @@ sub get_battery_data {
 	my ($prefix) = @_;
 	my %info;
 
-	if (-e "${prefix}/online") {
+	if ( -e "${prefix}/online" ) {
+
 		# AC adapter
-		if (fromfile("${prefix}/online")) {
+		if ( fromfile("${prefix}/online") ) {
 			$info{online} = 1;
 		}
 	}
-	elsif (-e "${prefix}/present" ) {
+	elsif ( -e "${prefix}/present" ) {
 		$info{remaining_capacity} = fromfile("$prefix/energy_now") / 1000;
 		$info{last_full_capacity} = fromfile("$prefix/energy_full") / 1000;
-		$info{design_capacity}    = fromfile("$prefix/energy_full_design") / 1000;
-		$info{alarm_capacity}     = fromfile("$prefix/alarm") / 1000;
-		$info{charging_state}     = lc( fromfile("$prefix/status") );
-		$info{present_rate}       = fromfile("$prefix/power_now") / 1000;
-		$info{present_voltage}    = fromfile("$prefix/voltage_now") / 1000;
-		$info{design_min_voltage} = fromfile("$prefix/voltage_min_design") / 1000;
-		$info{present}            = fromfile("$prefix/present");
+		$info{design_capacity} = fromfile("$prefix/energy_full_design") / 1000;
+		$info{alarm_capacity}  = fromfile("$prefix/alarm") / 1000;
+		$info{charging_state}  = lc( fromfile("$prefix/status") );
+		$info{present_rate}    = fromfile("$prefix/power_now") / 1000;
+		$info{present_voltage} = fromfile("$prefix/voltage_now") / 1000;
+		$info{design_min_voltage}
+		  = fromfile("$prefix/voltage_min_design") / 1000;
+		$info{present} = fromfile("$prefix/present");
 
 		if ( $info{design_capacity} == 0 ) {
 			$info{remaining_capacity} = fromfile("$prefix/charge_now") / 1000;
 			$info{last_full_capacity} = fromfile("$prefix/charge_full") / 1000;
-			$info{design_capacity} = fromfile("$prefix/charge_full_design") / 1000;
-			$info{present_rate}    = fromfile("$prefix/current_now") / 1000;
+			$info{design_capacity}
+			  = fromfile("$prefix/charge_full_design") / 1000;
+			$info{present_rate} = fromfile("$prefix/current_now") / 1000;
 		}
 
 		# prevent division by zero
-		foreach ( @info{ qw( last_full_capacity design_capacity present_rate ) } )
+		foreach ( @info{qw( last_full_capacity design_capacity present_rate )} )
 		{
 			if ( $_ == 0 ) {
 				$_ = -1;
 			}
 		}
 
-		$info{capacity} = $info{remaining_capacity} * 100 / $info{last_full_capacity};
-		$info{health}   = $info{last_full_capacity} * 100 / $info{design_capacity};
+		$info{capacity}
+		  = $info{remaining_capacity} * 100 / $info{last_full_capacity};
+		$info{health}
+		  = $info{last_full_capacity} * 100 / $info{design_capacity};
 	}
 
 	return \%info;
@@ -263,14 +269,16 @@ sub get_battery_data {
 
 sub print_battery_data {
 	my ($info_ref) = @_;
-	my %info = %{$info_ref};
-	my $ret = q{};
+	my %info       = %{$info_ref};
+	my $ret        = q{};
 
-	if ($info{online}) {
+	if ( $info{online} ) {
+
 		# Actually an AC adaptor
 		return q{↯};
 	}
-	if (not $info{present}) {
+	if ( not $info{present} ) {
+
 		# Probably not a battery
 		return q{};
 	}
@@ -282,13 +290,13 @@ sub print_battery_data {
 		$rsep .= '!';
 	}
 
-	my $utf8vbar_pos = int($info{capacity} * @utf8vbarx / 100);
+	my $utf8vbar_pos  = int( $info{capacity} * @utf8vbarx / 100 );
 	my $utf8vbar_elem = '▒';
-	if ($utf8vbar_pos < @utf8vbarx) {
+	if ( $utf8vbar_pos < @utf8vbarx ) {
 		$utf8vbar_elem = $utf8vbarx[$utf8vbar_pos];
 	}
 
-	if ( $detailed ) {
+	if ($detailed) {
 		given ( $info{charging_state} ) {
 			when ('discharging') {
 				$ret .= sprintf(
@@ -304,7 +312,7 @@ sub print_battery_data {
 			}
 			when ('charging') {
 				$rsep .= '⇧';
-				$ret .= sprintf(
+				$ret  .= sprintf(
 					'%.f%% %s%s%s %d:%02.f',
 					$info{capacity},
 					$lsep,
@@ -340,8 +348,7 @@ sub print_battery_data {
 				$rsep .= '⇧';
 			}
 		}
-		$ret .= sprintf( '%s%s%s',
-			$lsep, $utf8vbar_elem, $rsep, );
+		$ret .= sprintf( '%s%s%s', $lsep, $utf8vbar_elem, $rsep, );
 	}
 	return $ret;
 }
@@ -349,7 +356,7 @@ sub print_battery_data {
 sub print_battery_bt {
 	my $psdir;
 
-	if (not opendir($psdir, '/sys/class/power_supply')) {
+	if ( not opendir( $psdir, '/sys/class/power_supply' ) ) {
 		$line{bat_bt} = undef;
 		return;
 	}
@@ -358,15 +365,12 @@ sub print_battery_bt {
 	my $rsep = '▏';
 
 	$line{bat_bt} = q{};
-	for my $dir (readdir($psdir)) {
+	for my $dir ( readdir($psdir) ) {
 		my $prefix = "/sys/class/power_supply/$dir";
-		if ($dir =~ m{ ..:..:..:..:..:.. }x and -r "$prefix/capacity") {
+		if ( $dir =~ m{ ..:..:..:..:..:.. }x and -r "$prefix/capacity" ) {
 			my $capacity = fromfile("$prefix/capacity");
-			$line{bat_bt} .= sprintf('%s%s%s',
-				$lsep,
-				$utf8vbarx[ $capacity * @utf8vbarx / 101 ],
-				$rsep,
-			);
+			$line{bat_bt} .= sprintf( '%s%s%s',
+				$lsep, $utf8vbarx[ $capacity * @utf8vbarx / 101 ], $rsep, );
 		}
 	}
 	return;
@@ -480,7 +484,13 @@ while (1) {
 		print_battery_bt();
 	}
 
-	if ( count(5) and ($hostname eq 'illusion' or $hostname eq 'momentum' or $hostname eq 'vatos')) {
+	if (
+		count(5)
+		and (  $hostname eq 'illusion'
+			or $hostname eq 'momentum'
+			or $hostname eq 'vatos' )
+	  )
+	{
 
 		print_tp_fan;
 		print_sys_thermal;
@@ -501,9 +511,7 @@ while (1) {
 	}
 
 	if ( count(10)
-		and (
-			-e '/tmp/ssh-lastlight.derf0.net-22-derf'
-		))
+		and ( -e '/tmp/ssh-lastlight.derf0.net-22-derf' ) )
 	{
 		print_lastlight;
 	}
@@ -512,7 +520,7 @@ while (1) {
 	$buf = q{};
 	for my $element (
 		@line{
-			'unison',  'mail', 'media', 'fan', 'mem', 'thermal',
+			'unison',  'mail', 'media', 'fan',    'mem', 'thermal',
 			'hddtemp', 'bt',   'wifi',  'bat_bt', 'bat'
 		}
 	  )
