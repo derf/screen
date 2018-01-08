@@ -212,8 +212,10 @@ sub print_battery {
 		}
 	}
 
-	$line{bat} .= sprintf( ' %.f%%',
-		$sum_info{remaining_capacity} * 100 / $sum_info{last_full_capacity} );
+	if ($sum_info{last_full_capacity}) {
+		$line{bat} .= sprintf( ' %.f%%',
+			$sum_info{remaining_capacity} * 100 / $sum_info{last_full_capacity} );
+	}
 
 	closedir($psdir);
 	return;
