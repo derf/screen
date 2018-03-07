@@ -74,13 +74,13 @@ sub fromfile {
 	return $content;
 }
 
-sub print_lastlight {
+sub print_arclight {
 	my $ssh_command
 	  = 'ssh -o ConnectTimeout=2 -o ServerAliveInterval=5 -o ServerAliveCountMax=2';
 
-	debug('print_lastlight');
+	debug('print_arclight');
 
-	my $raw = qx|$ssh_command lastlight 'while read md short; do 
+	my $raw = qx|$ssh_command arclight 'while read md short; do 
 		[[ -n \$(echo Maildir/\$md/new/*(N)) ]] && echo \$short; true;
 		done < Maildir/maildirs'|;
 
@@ -513,9 +513,9 @@ while (1) {
 	}
 
 	if ( count(10)
-		and ( -e '/tmp/ssh-lastlight.derf0.net-22-derf' ) )
+		and ( -e '/tmp/ssh-arclight.derf0.net-22-derf' ) )
 	{
-		print_lastlight;
+		print_arclight;
 	}
 	$line{date} = strftime( '%H:%M', @{ [ localtime(time) ] } );
 
