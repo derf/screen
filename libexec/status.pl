@@ -190,6 +190,7 @@ sub print_battery {
 		design_capacity    => 0,
 		present_rate       => 0,
 		online             => 0,
+		discharging        => 0,
 	);
 
 	if ( not opendir( $psdir, '/sys/class/power_supply' ) ) {
@@ -212,9 +213,23 @@ sub print_battery {
 		}
 	}
 
-	if ($sum_info{last_full_capacity}) {
+	if ( $sum_info{last_full_capacity} ) {
 		$line{bat} .= sprintf( ' %.f%%',
-			$sum_info{remaining_capacity} * 100 / $sum_info{last_full_capacity} );
+			$sum_info{remaining_capacity} * 100 / $sum_info{last_full_capacity}
+		);
+	}
+	if (    $sum_info{discharging}
+		and $sum_info{remaining_capacity}
+		and $sum_info{present_rate} )
+	{
+		if ( $sum_info{remaining_capacity} / $sum_info{present_rate} > 1 ) {
+			$line{bat} .= sprintf( ' (%dh)',
+				$sum_info{remaining_capacity} / $sum_info{present_rate} );
+		}
+		else {
+			$line{bat} .= sprintf( ' (%dm)',
+				$sum_info{remaining_capacity} * 60 / $sum_info{present_rate} );
+		}
 	}
 
 	closedir($psdir);
@@ -250,6 +265,9 @@ sub get_battery_data {
 			$info{design_capacity}
 			  = fromfile("$prefix/charge_full_design") / 1000;
 			$info{present_rate} = fromfile("$prefix/current_now") / 1000;
+		}
+		if ( $info{charging_state} eq 'discharging' ) {
+			$info{discharging} = 1;
 		}
 
 		# prevent division by zero
