@@ -80,8 +80,8 @@ sub print_arclight {
 
 	debug('print_arclight');
 
-	my $raw = qx|$ssh_command arclight 'while read md short; do 
-		[[ -n \$(echo Maildir/\$md/new/*(N)) ]] && echo \$short; true;
+	my $raw = qx|$ssh_command arclight 'setopt extended_glob; while read md short; do 
+		[[ -n \$(echo Maildir/\$md/new/*(N) Maildir/\$md/cur/*~*,*S*(N)) ]] && echo \$short; true;
 		done < Maildir/maildirs'|;
 
 	if ( $? >> 8 ) {
